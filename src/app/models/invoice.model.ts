@@ -3,15 +3,22 @@ export interface Invoice {
   invoiceNo?: string;
   clientId: number;
   clientName?: string;
-  packageId: number;
+  clientCode?: string;
+  clientPhone?: string;
+  clientAddress?: string;
   packageName?: string;
+  areaName?: string;
   amount: number;
-  taxAmount: number;
-  discount: number;
-  totalAmount: number;
+  tax?: number;
+  discount?: number;
+  totalAmount?: number;
+  amountPaid?: number;
+  balance?: number;
+  status: 'unpaid' | 'paid' | 'partial' | 'overdue';
   issueDate: string;
   dueDate: string;
-  billingMonth: string;
-  status: 'unpaid' | 'paid' | 'overdue' | 'cancelled';
+  paymentDate?: string;
+  paymentMethod?: string;
+  notes?: string;
   createdAt?: string;
 }

@@ -1,0 +1,89 @@
+<div class="form-page">
+  <div class="form-header">
+    <button class="back-btn" (click)="cancel()">← Back</button>
+    <div>
+      <h1>{{ isEdit ? 'Edit Invoice' : 'Create Invoice' }}</h1>
+      <p>{{ isEdit ? 'Update invoice details' : 'Generate a new client invoice' }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-layout">
+      <div class="form-main">
+        <div class="form-card">
+          <div class="card-title">Invoice Details</div>
+          <div class="form-grid">
+
+            <div class="field full">
+              <label>Select Client <span class="req">*</span></label>
+              <select formControlName="clientId" (change)="onClientChange()"
+                [class.err]="f['clientId'].touched && f['clientId'].invalid">
+                <option value="">-- Select Client --</option>
+                <option *ngFor="let c of clients" [value]="c.id">{{ c.name }} ({{ c.code }})</option>
+              </select>
+              <div class="err-msg" *ngIf="f['clientId'].touched && f['clientId'].invalid">Please select a client</div>
+              <div class="client-hint" *ngIf="selectedClient">
+                📡 Package: <strong>{{ selectedClient.packageName }}</strong> — ₨{{ selectedClient.packagePrice }}/month
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Issue Date <span class="req">*</span></label>
+              <input type="date" formControlName="issueDate" />
+            </div>
+            <div class="field">
+              <label>Due Date <span class="req">*</span></label>
+              <input type="date" formControlName="dueDate" />
+            </div>
+
+            <div class="field">
+              <label>Base Amount (₨) <span class="req">*</span></label>
+              <input type="number" formControlName="amount" min="0"
+                [class.err]="f['amount'].touched && f['amount'].invalid" />
+            </div>
+            <div class="field">
+              <label>Discount (₨)</label>
+              <input type="number" formControlName="discount" min="0" />
+            </div>
+            <div class="field">
+              <label>Tax (₨)</label>
+              <input type="number" formControlName="tax" min="0" />
+            </div>
+
+            <div class="field full">
+              <label>Notes</label>
+              <textarea formControlName="notes" rows="3" placeholder="Any additional notes..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-sidebar">
+        <div class="summary-card">
+          <div class="card-title">Invoice Preview</div>
+          <div class="inv-preview">
+            <div class="inv-no">Invoice #<span>AUTO</span></div>
+            <div class="inv-client">{{ selectedClient?.name || 'No client selected' }}</div>
+            <div class="inv-pkg">{{ selectedClient?.packageName }}</div>
+            <div class="inv-calc">
+              <div class="ic-row"><span>Base Amount</span><strong>₨{{ form.value.amount | number }}</strong></div>
+              <div class="ic-row" *ngIf="form.value.discount"><span>Discount</span><strong class="red">- ₨{{ form.value.discount | number }}</strong></div>
+              <div class="ic-row" *ngIf="form.value.tax"><span>Tax</span><strong>+ ₨{{ form.value.tax | number }}</strong></div>
+              <div class="ic-row total"><span>Total</span><strong class="big">₨{{ totalAmount | number }}</strong></div>
+            </div>
+            <div class="inv-dates">
+              <span>Issue: {{ form.value.issueDate | date:'dd MMM yy' }}</span>
+              <span>Due: {{ form.value.dueDate | date:'dd MMM yy' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-btns">
+          <button type="submit" class="btn-save" [disabled]="saving">
+            {{ saving ? 'Saving...' : (isEdit ? '💾 Update Invoice' : '🧾 Create Invoice') }}
+          </button>
+          <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

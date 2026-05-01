@@ -1,0 +1,86 @@
+<div class="detail-page">
+  <div class="detail-header no-print">
+    <button class="back-btn" (click)="back()">← Back</button>
+    <div class="dh-right">
+      <button class="btn-outline" (click)="print()">🖨️ Print</button>
+      <button class="btn-outline" (click)="edit()">✏️ Edit</button>
+    </div>
+  </div>
+
+  <!-- PRINTABLE INVOICE -->
+  <div class="invoice-paper">
+    <!-- Company Header -->
+    <div class="inv-header">
+      <div class="company-info">
+        <div class="company-name">NetPro ISP</div>
+        <div class="company-detail">Karachi, Pakistan</div>
+        <div class="company-detail">📞 0300-0000000 | ✉️ billing@netpro.pk</div>
+      </div>
+      <div class="inv-meta">
+        <div class="inv-no-big">{{ invoice?.invoiceNo }}</div>
+        <div class="inv-status-print">
+          <span class="status-badge" [class]="invoice?.status">{{ invoice?.status | titlecase }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-divider"></div>
+
+    <!-- Billed To / Invoice Info -->
+    <div class="inv-parties">
+      <div class="billed-to">
+        <div class="section-label">Billed To</div>
+        <div class="party-name">{{ invoice?.clientName }}</div>
+        <div class="party-detail">{{ invoice?.clientCode }}</div>
+        <div class="party-detail">📞 {{ invoice?.clientPhone }}</div>
+        <div class="party-detail">📍 {{ invoice?.clientAddress }}</div>
+      </div>
+      <div class="inv-dates-box">
+        <div class="date-row"><span>Issue Date</span><strong>{{ invoice?.issueDate | date:'dd MMM yyyy' }}</strong></div>
+        <div class="date-row"><span>Due Date</span><strong>{{ invoice?.dueDate | date:'dd MMM yyyy' }}</strong></div>
+        <div class="date-row" *ngIf="invoice?.paymentDate"><span>Paid On</span><strong class="green">{{ invoice?.paymentDate | date:'dd MMM yyyy' }}</strong></div>
+        <div class="date-row" *ngIf="invoice?.paymentMethod"><span>Method</span><strong>{{ invoice?.paymentMethod | titlecase }}</strong></div>
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <table class="line-items">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Area</th>
+          <th class="right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="item-name">{{ invoice?.packageName }}</div>
+            <div class="item-sub">Monthly internet service</div>
+          </td>
+          <td>{{ invoice?.areaName }}</td>
+          <td class="right mono">₨{{ invoice?.amount | number }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-box">
+      <div class="total-row"><span>Subtotal</span><strong>₨{{ invoice?.amount | number }}</strong></div>
+      <div class="total-row" *ngIf="invoice?.discount"><span>Discount</span><strong class="red">- ₨{{ invoice?.discount | number }}</strong></div>
+      <div class="total-row" *ngIf="invoice?.tax"><span>Tax</span><strong>₨{{ invoice?.tax | number }}</strong></div>
+      <div class="total-row grand"><span>Total</span><strong class="big">₨{{ invoice?.totalAmount | number }}</strong></div>
+      <div class="total-row" *ngIf="invoice?.amountPaid"><span>Amount Paid</span><strong class="green">₨{{ invoice?.amountPaid | number }}</strong></div>
+      <!-- <div class="total-row balance" *ngIf="(invoice?.balance || 0) > 0"><span>Balance Due</span><strong class="red big">₨{{ invoice?.balance | number }}</strong></div> -->
+  <div class="total-row balance" *ngIf="(invoice?.balance ?? 0) > 0">
+  <span>Balance Due</span>
+  <strong class="red big">₨{{ invoice?.balance ?? 0 | number }}</strong>
+</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="inv-footer">
+      <p>Thank you for your business! For support contact: 0300-0000000</p>
+    </div>
+  </div>
+</div>
