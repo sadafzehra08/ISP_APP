@@ -1,0 +1,91 @@
+<div class="detail-page">
+  <div class="detail-header">
+    <button class="back-btn" (click)="back()">← Back to Clients</button>
+    <div class="dh-right">
+      <button class="btn-outline">📄 Generate Invoice</button>
+      <button class="btn-primary" (click)="edit()">✏️ Edit Client</button>
+    </div>
+  </div>
+
+  <!-- CLIENT HERO -->
+  <div class="client-hero">
+    <div class="hero-avatar">{{ client?.fullName?.charAt(0) }}</div>
+    <div class="hero-info">
+      <div class="hero-name">{{ client?.fullName }}</div>
+      <div class="hero-code">{{ client?.clientCode }}</div>
+      <div class="hero-meta">
+        <span>📞 {{ client?.phone }}</span>
+        <span>✉️ {{ client?.email }}</span>
+        <span>🪪 {{ client?.cnic }}</span>
+      </div>
+    </div>
+    <div class="hero-status">
+      <span class="status-badge" [class]="client?.status">{{ client?.status | titlecase }}</span>
+      <div class="hero-since">Connected since {{ client?.connectionDate | date:'MMM yyyy' }}</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="detail-tabs">
+    <button class="dtab" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">📋 Overview</button>
+    <button class="dtab" [class.active]="activeTab==='invoices'" (click)="activeTab='invoices'">🧾 Invoices</button>
+    <button class="dtab" [class.active]="activeTab==='payments'" (click)="activeTab='payments'">💳 Payments</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div *ngIf="activeTab === 'overview'">
+    <div class="detail-grid">
+      <div class="info-card">
+        <div class="info-title">📡 Connection Details</div>
+        <div class="info-rows">
+          <div class="ir"><span>Package</span><strong>{{ client?.packageName }}</strong></div>
+          <div class="ir"><span>IP Address</span><strong class="mono">{{ client?.ipAddress }}</strong></div>
+          <div class="ir"><span>Connection Date</span><strong>{{ client?.connectionDate | date:'dd MMM yyyy' }}</strong></div>
+          <div class="ir"><span>Expiry Date</span><strong>{{ client?.expiryDate | date:'dd MMM yyyy' }}</strong></div>
+          <div class="ir"><span>Area</span><strong>{{ client?.areaName }}</strong></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-title">📊 Billing Summary</div>
+        <div class="info-rows">
+          <div class="ir"><span>Total Paid</span><strong class="green">₨13,500</strong></div>
+          <div class="ir"><span>Outstanding</span><strong class="red">₨0</strong></div>
+          <div class="ir"><span>Last Payment</span><strong>01 May 2025</strong></div>
+          <div class="ir"><span>Payment Method</span><strong>Cash</strong></div>
+          <div class="ir"><span>Invoices</span><strong>9 Total</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-card mt">
+      <div class="info-title">📍 Address</div>
+      <p class="address-text">{{ client?.address }}</p>
+    </div>
+  </div>
+
+  <!-- INVOICES TAB -->
+  <div *ngIf="activeTab === 'invoices'">
+    <div class="info-card">
+      <div class="info-title">Invoice History</div>
+      <table class="mini-table">
+        <thead><tr><th>Invoice #</th><th>Amount</th><th>Issue Date</th><th>Due Date</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let inv of invoices">
+            <td class="mono">{{ inv.invoiceNo }}</td>
+            <td>₨{{ inv.amount | number }}</td>
+            <td>{{ inv.issueDate | date:'dd MMM yy' }}</td>
+            <td>{{ inv.dueDate | date:'dd MMM yy' }}</td>
+            <td><span class="badge" [class]="inv.status">{{ inv.status | titlecase }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAYMENTS TAB -->
+  <div *ngIf="activeTab === 'payments'">
+    <div class="info-card">
+      <div class="info-title">Payment History</div>
+      <p style="color:#5a7fa8;font-size:13px;padding:1rem 0">No payment records found.</p>
+    </div>
+  </div>
+</div>

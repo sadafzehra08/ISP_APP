@@ -1,0 +1,151 @@
+<div class="form-page">
+  <div class="form-header">
+    <button class="back-btn" (click)="cancel()">← Back</button>
+    <div>
+      <h1>{{ isEdit ? 'Edit Client' : 'Add New Client' }}</h1>
+      <p>{{ isEdit ? 'Update client information' : 'Register a new ISP client' }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-layout">
+
+      <!-- MAIN FORM -->
+      <div class="form-main">
+
+        <!-- TABS -->
+        <div class="form-tabs">
+          <button type="button" class="ftab" [class.active]="activeTab==='personal'" (click)="activeTab='personal'">👤 Personal Info</button>
+          <button type="button" class="ftab" [class.active]="activeTab==='connection'" (click)="activeTab='connection'">📡 Connection</button>
+          <button type="button" class="ftab" [class.active]="activeTab==='other'" (click)="activeTab='other'">📝 Other</button>
+        </div>
+
+        <!-- PERSONAL INFO TAB -->
+        <div class="tab-content" *ngIf="activeTab === 'personal'">
+          <div class="form-card">
+            <div class="card-title">Personal Information</div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Full Name <span class="req">*</span></label>
+                <input type="text" formControlName="fullName" placeholder="e.g. Ahmed Raza Khan"
+                  [class.err]="f['fullName'].touched && f['fullName'].invalid" />
+                <div class="err-msg" *ngIf="f['fullName'].touched && f['fullName'].invalid">Full name is required (min 3 chars)</div>
+              </div>
+              <div class="field">
+                <label>CNIC <span class="req">*</span></label>
+                <input type="text" formControlName="cnic" placeholder="42101-1234567-1"
+                  (input)="formatCnic($event)"
+                  [class.err]="f['cnic'].touched && f['cnic'].invalid" />
+                <div class="err-msg" *ngIf="f['cnic'].touched && f['cnic'].invalid">Format: 42101-1234567-1</div>
+              </div>
+              <div class="field">
+                <label>Phone <span class="req">*</span></label>
+                <input type="text" formControlName="phone" placeholder="03001234567"
+                  [class.err]="f['phone'].touched && f['phone'].invalid" />
+                <div class="err-msg" *ngIf="f['phone'].touched && f['phone'].invalid">Valid 11-digit Pakistani number</div>
+              </div>
+              <div class="field full">
+                <label>Email Address</label>
+                <input type="email" formControlName="email" placeholder="client@email.com"
+                  [class.err]="f['email'].touched && f['email'].invalid" />
+              </div>
+              <div class="field full">
+                <label>Full Address <span class="req">*</span></label>
+                <textarea formControlName="address" rows="2" placeholder="House No, Street, Block, Area..."
+                  [class.err]="f['address'].touched && f['address'].invalid"></textarea>
+                <div class="err-msg" *ngIf="f['address'].touched && f['address'].invalid">Address is required</div>
+              </div>
+              <div class="field">
+                <label>Area <span class="req">*</span></label>
+                <select formControlName="areaId" [class.err]="f['areaId'].touched && f['areaId'].invalid">
+                  <option value="">-- Select Area --</option>
+                  <option *ngFor="let a of areas" [value]="a.id">{{ a.name }}</option>
+                </select>
+                <div class="err-msg" *ngIf="f['areaId'].touched && f['areaId'].invalid">Please select an area</div>
+              </div>
+              <div class="field">
+                <label>Status <span class="req">*</span></label>
+                <select formControlName="status">
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="disconnected">Disconnected</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTION TAB -->
+        <div class="tab-content" *ngIf="activeTab === 'connection'">
+          <div class="form-card">
+            <div class="card-title">Connection Details</div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Package <span class="req">*</span></label>
+                <div class="pkg-options">
+                  <label class="pkg-opt" *ngFor="let p of packages" [class.selected]="form.value.packageId == p.id">
+                    <input type="radio" [value]="p.id" formControlName="packageId" style="display:none" />
+                    <div class="pkg-opt-name">{{ p.name }}</div>
+                    <div class="pkg-opt-price">₨{{ p.price }}/mo</div>
+                  </label>
+                </div>
+                <div class="err-msg" *ngIf="f['packageId'].touched && f['packageId'].invalid">Please select a package</div>
+              </div>
+              <div class="field">
+                <label>Connection Date <span class="req">*</span></label>
+                <input type="date" formControlName="connectionDate" />
+              </div>
+              <div class="field">
+                <label>IP Address</label>
+                <input type="text" formControlName="ipAddress" placeholder="192.168.1.100"
+                  [class.err]="f['ipAddress'].touched && f['ipAddress'].invalid" />
+                <div class="err-msg" *ngIf="f['ipAddress'].touched && f['ipAddress'].invalid">Valid IP format required</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTHER TAB -->
+        <div class="tab-content" *ngIf="activeTab === 'other'">
+          <div class="form-card">
+            <div class="card-title">Additional Notes</div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Notes / Remarks</label>
+                <textarea formControlName="notes" rows="5" placeholder="Any additional notes about this client..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR SUMMARY -->
+      <div class="form-sidebar">
+        <div class="summary-card">
+          <div class="card-title">Summary</div>
+          <div class="summary-avatar">{{ form.value.fullName?.charAt(0) || '?' }}</div>
+          <div class="summary-name">{{ form.value.fullName || 'New Client' }}</div>
+          <div class="summary-rows">
+            <div class="sum-row"><span>Phone</span><strong>{{ form.value.phone || '—' }}</strong></div>
+            <div class="sum-row"><span>Area</span><strong>{{ areas[form.value.areaId - 1]?.name || '—' }}</strong></div>
+            <div class="sum-row"><span>Package</span><strong>{{ selectedPackage?.name || '—' }}</strong></div>
+            <div class="sum-row"><span>Monthly Fee</span><strong class="green">{{ selectedPackage ? '₨' + selectedPackage.price : '—' }}</strong></div>
+            <div class="sum-row"><span>Status</span>
+              <span class="status-badge" [class]="form.value.status">{{ form.value.status | titlecase }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <button type="submit" class="btn-save" [disabled]="saving">
+            <span *ngIf="!saving">💾 {{ isEdit ? 'Update Client' : 'Save Client' }}</span>
+            <span *ngIf="saving" class="saving-spinner">Saving...</span>
+          </button>
+          <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>

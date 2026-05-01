@@ -1,0 +1,63 @@
+<div class="sidebar" [class.collapsed]="collapsed">
+  <!-- Brand -->
+  <div class="sb-brand">
+    <div class="sb-logo">📡</div>
+    <div class="sb-brand-text" *ngIf="!collapsed">
+      <div class="brand-name">NetPro ISP</div>
+      <div class="brand-sub">Management System</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sb-nav">
+    <div class="sb-section" *ngIf="!collapsed">Main Menu</div>
+    <div class="sb-item" *ngFor="let item of mainNav"
+      [class.active]="isActive(item.route!)"
+      (click)="navigate(item.route!)">
+      <span class="sb-icon">{{ item.icon }}</span>
+      <span class="sb-label" *ngIf="!collapsed">{{ item.label }}</span>
+      <span class="sb-badge" *ngIf="item.badge && !collapsed"
+        [class.red]="item.badgeColor === 'red'"
+        [class.green]="item.badgeColor === 'green'">
+        {{ item.badge }}
+      </span>
+    </div>
+
+    <div class="sb-section" *ngIf="!collapsed">Billing</div>
+    <div class="sb-item" *ngFor="let item of billingNav"
+      [class.active]="isActive(item.route!)"
+      (click)="navigate(item.route!)">
+      <span class="sb-icon">{{ item.icon }}</span>
+      <span class="sb-label" *ngIf="!collapsed">{{ item.label }}</span>
+      <span class="sb-badge red" *ngIf="item.badge && !collapsed">{{ item.badge }}</span>
+    </div>
+
+    <div class="sb-section" *ngIf="!collapsed">Analytics</div>
+    <div class="sb-item" *ngFor="let item of analyticsNav"
+      [class.active]="isActive(item.route!)"
+      (click)="navigate(item.route!)">
+      <span class="sb-icon">{{ item.icon }}</span>
+      <span class="sb-label" *ngIf="!collapsed">{{ item.label }}</span>
+    </div>
+
+    <div class="sb-section" *ngIf="!collapsed">System</div>
+    <div class="sb-item" *ngFor="let item of systemNav"
+      [class.active]="isActive(item.route!)"
+      (click)="navigate(item.route!)">
+      <span class="sb-icon">{{ item.icon }}</span>
+      <span class="sb-label" *ngIf="!collapsed">{{ item.label }}</span>
+    </div>
+  </nav>
+
+  <div class="sb-spacer"></div>
+
+  <!-- User -->
+  <div class="sb-user">
+    <div class="sb-avatar">{{ userInitials }}</div>
+    <div class="sb-user-info" *ngIf="!collapsed">
+      <div class="u-name">{{ auth.currentUser?.name }}</div>
+      <div class="u-role">{{ auth.currentUser?.role | titlecase }}</div>
+    </div>
+    <div class="sb-logout" *ngIf="!collapsed" (click)="logout()" title="Logout">↩</div>
+  </div>
+</div>

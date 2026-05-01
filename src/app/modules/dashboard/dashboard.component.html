@@ -1,0 +1,241 @@
+<div class="dashboard">
+
+  <!-- WELCOME BANNER -->
+  <div class="welcome-banner">
+    <div class="wb-left">
+      <h2>{{ greeting }}, {{ auth.currentUser?.name }} 👋</h2>
+      <p>Here's what's happening with your ISP network today</p>
+      <div class="wb-stats">
+        <div class="wb-stat">
+          <span>Network Status</span>
+          <strong><i class="live-dot"></i> All Systems Online</strong>
+        </div>
+        <div class="wb-stat">
+          <span>Billing Cycle</span>
+          <strong>{{ currentDate | date:'MMMM yyyy' }}</strong>
+        </div>
+        <div class="wb-stat">
+          <span>Revenue Target</span>
+          <strong>{{ targetPercent }}% Achieved</strong>
+        </div>
+      </div>
+    </div>
+    <div class="wb-actions">
+      <button class="btn-outline">📥 Export</button>
+      <button class="btn-primary">+ Add Client</button>
+    </div>
+  </div>
+
+  <!-- KPI ROW 1 -->
+  <div class="kpi-grid">
+    <div class="kpi-card accent-blue">
+      <div class="kpi-top">
+        <div class="kpi-icon blue">👥</div>
+        <span class="kpi-trend up">↑ 8.2%</span>
+      </div>
+      <div class="kpi-value">{{ stats.totalClients | number }}</div>
+      <div class="kpi-label">Total Clients</div>
+      <div class="kpi-hint">
+        <span class="hl-green">{{ stats.activeClients | number }}</span> active ·
+        {{ stats.suspendedClients }} inactive
+      </div>
+      <div class="sparkline">
+        <div *ngFor="let h of [40,55,45,65,60,75,85,100]" class="spark blue" [style.height.%]="h"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card accent-green">
+      <div class="kpi-top">
+        <div class="kpi-icon green">💰</div>
+        <span class="kpi-trend up">↑ 12.5%</span>
+      </div>
+      <div class="kpi-value">{{ formatCurrency(stats.monthlyRevenue) }}</div>
+      <div class="kpi-label">Monthly Revenue</div>
+      <div class="kpi-hint">Target: <span class="hl-green">{{ formatCurrency(stats.targetRevenue) }}</span> ({{ targetPercent }}%)</div>
+      <div class="sparkline">
+        <div *ngFor="let h of [50,60,70,55,80,90,75,100]" class="spark green" [style.height.%]="h"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card accent-amber">
+      <div class="kpi-top">
+        <div class="kpi-icon amber">🧾</div>
+        <span class="kpi-trend down">+3 new</span>
+      </div>
+      <div class="kpi-value">{{ stats.pendingInvoices }}</div>
+      <div class="kpi-label">Pending Invoices</div>
+      <div class="kpi-hint">Due this week: <span class="hl-amber">₨1.2L</span></div>
+      <div class="sparkline">
+        <div *ngFor="let h of [80,90,60,70,55,65,45,40]" class="spark amber" [style.height.%]="h"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card accent-red">
+      <div class="kpi-top">
+        <div class="kpi-icon red">⚠️</div>
+        <span class="kpi-trend down">+5 more</span>
+      </div>
+      <div class="kpi-value">{{ stats.overdueClients }}</div>
+      <div class="kpi-label">Overdue Clients</div>
+      <div class="kpi-hint">Amount: <span class="hl-red">{{ formatCurrency(stats.overdueAmount) }}</span></div>
+      <div class="sparkline">
+        <div *ngFor="let h of [30,45,60,70,80,90,85,100]" class="spark red" [style.height.%]="h"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI ROW 2 -->
+  <div class="kpi-grid kpi-sm">
+    <div class="kpi-mini green">
+      <div class="kpi-mini-val">{{ formatCurrency(stats.collectedToday) }}</div>
+      <div class="kpi-mini-label">Collected Today</div>
+      <div class="kpi-mini-icon">💵</div>
+    </div>
+    <div class="kpi-mini blue">
+      <div class="kpi-mini-val">{{ stats.newClientsThisMonth }}</div>
+      <div class="kpi-mini-label">New This Month</div>
+      <div class="kpi-mini-icon">✨</div>
+    </div>
+    <div class="kpi-mini purple">
+      <div class="kpi-mini-val">{{ stats.suspendedClients }}</div>
+      <div class="kpi-mini-label">Suspended</div>
+      <div class="kpi-mini-icon">🚫</div>
+    </div>
+    <div class="kpi-mini amber">
+      <div class="kpi-mini-val">{{ stats.expiringCount }}</div>
+      <div class="kpi-mini-label">Expiring Soon</div>
+      <div class="kpi-mini-icon">⏰</div>
+    </div>
+  </div>
+
+  <!-- CHART + STATUS -->
+  <div class="mid-grid">
+    <!-- BAR CHART -->
+    <div class="card chart-card">
+      <div class="card-head">
+        <div class="card-title">Revenue vs Collection — {{ currentDate | date:'yyyy' }}</div>
+        <div class="tab-group">
+          <button class="tab" [class.active]="selectedTab==='Monthly'" (click)="selectedTab='Monthly'">Monthly</button>
+          <button class="tab" [class.active]="selectedTab==='Weekly'" (click)="selectedTab='Weekly'">Weekly</button>
+        </div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-group" *ngFor="let d of monthlyData">
+          <div class="bar-wrap">
+            <div class="bar rev" [style.height]="getBarHeight(d.revenue)" title="Revenue: {{ formatCurrency(d.revenue) }}"></div>
+            <div class="bar col" [style.height]="getBarHeight(d.collection)" title="Collection: {{ formatCurrency(d.collection) }}"></div>
+          </div>
+          <div class="bar-label">{{ d.month }}</div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><i class="l-dot blue"></i> Revenue</span>
+        <span class="legend-item"><i class="l-dot green"></i> Collection</span>
+      </div>
+    </div>
+
+    <!-- STATUS DONUT -->
+    <div class="card status-card">
+      <div class="card-head">
+        <div class="card-title">Client Status</div>
+        <div style="font-size:11px;color:#5a7fa8">Total: {{ stats.totalClients | number }}</div>
+      </div>
+      <div class="donut-center-wrap">
+        <svg viewBox="0 0 42 42" class="donut-svg">
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#0d2438" stroke-width="4.5"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#00e5a0" stroke-width="4.5"
+            stroke-dasharray="88.5 11.5" stroke-dashoffset="25"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#ffb340" stroke-width="4.5"
+            stroke-dasharray="11 89" stroke-dashoffset="-63.5"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#ff5c7a" stroke-width="4.5"
+            stroke-dasharray="1.8 98.2" stroke-dashoffset="-74.5"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#b47cff" stroke-width="4.5"
+            stroke-dasharray="6.7 93.3" stroke-dashoffset="-76.3"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-val">{{ stats.totalClients | number }}</div>
+          <div class="donut-sub">Total</div>
+        </div>
+      </div>
+
+      <div class="status-rows">
+        <div class="s-row">
+          <div class="s-dot" style="background:#00e5a0"></div>
+          <div class="s-name">Active</div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:#00e5a0" [style.width.%]="activePercent"></div></div>
+          <div class="s-count">{{ stats.activeClients | number }}</div>
+          <div class="s-pct">{{ activePercent }}%</div>
+        </div>
+        <div class="s-row">
+          <div class="s-dot" style="background:#ffb340"></div>
+          <div class="s-name">Suspended</div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:#ffb340" [style.width.%]="suspendedPercent"></div></div>
+          <div class="s-count">{{ stats.suspendedClients }}</div>
+          <div class="s-pct">{{ suspendedPercent }}%</div>
+        </div>
+        <div class="s-row">
+          <div class="s-dot" style="background:#ff5c7a"></div>
+          <div class="s-name">Overdue</div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:#ff5c7a;width:1.8%"></div></div>
+          <div class="s-count">{{ stats.overdueClients }}</div>
+          <div class="s-pct">1.8%</div>
+        </div>
+        <div class="s-row">
+          <div class="s-dot" style="background:#b47cff"></div>
+          <div class="s-name">Disconnected</div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:#b47cff;width:6.7%"></div></div>
+          <div class="s-count">{{ stats.disconnectedClients }}</div>
+          <div class="s-pct">6.7%</div>
+        </div>
+        <div class="s-row" style="border-top:1px solid rgba(0,180,255,0.08);margin-top:8px;padding-top:8px">
+          <div class="s-dot" style="background:#00b4ff"></div>
+          <div class="s-name">New (month)</div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:#00b4ff;width:3%"></div></div>
+          <div class="s-count">{{ stats.newClientsThisMonth }}</div>
+          <div class="s-pct">+3%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: INVOICES + ACTIVITY -->
+  <div class="bottom-grid">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Recent Invoices</div>
+        <a routerLink="/invoices" class="view-all">View All →</a>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Invoice #</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inv of recentInvoices">
+            <td class="mono">{{ inv.invoiceNo }}</td>
+            <td>{{ inv.clientName }}</td>
+            <td class="mono">₨{{ inv.amount | number }}</td>
+            <td><span class="badge" [class]="inv.status">{{ inv.status | titlecase }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Live Activity</div>
+        <div style="font-size:11px;color:#5a7fa8"><i class="live-dot"></i> Real-time</div>
+      </div>
+      <div class="activity-list">
+        <!-- <div class="act-item" *ngFor="let log of activityLogs">
+          <div class="act-icon" [style.background]="log.iconBg">{{ log.icon }}</div>
+          <div class="act-body">
+            <div class="act-title"><span class="act-hl">{{ log.highlight }}</span> {{ log.title }}</div>
+            <div class="act-time">{{ log.detail }}</div>
+          </div>
+          <div class="act-amount" *ngIf="log.amount">+₨{{ log.amount | number }}</div>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+</div>

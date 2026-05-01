@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #060d1a; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+::-webkit-scrollbar-thumb { background: rgba(0,180,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,180,255,0.5); }
+
+.isp-content { padding: 1.5rem; }
+.page-title { font-size: 20px; font-weight: 600; color: #e2e8f0; margin-bottom: 1.5rem; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+
+  &.active { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  &.suspended { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+  &.disconnected { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  &.paid { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  &.unpaid { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+  &.overdue { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+}

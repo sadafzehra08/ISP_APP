@@ -1,0 +1,25 @@
+<div class="topbar">
+  <button class="tb-toggle" (click)="onToggle()" title="Toggle Sidebar">☰</button>
+
+  <div class="tb-title-wrap">
+    <h1 class="tb-title">{{ pageTitle }}</h1>
+  </div>
+
+  <div class="tb-spacer"></div>
+
+  <div class="tb-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search clients, invoices..." class="search-input" />
+  </div>
+
+  <div class="tb-date">📅 {{ currentDate }}</div>
+
+  <div class="tb-notif" [attr.data-count]="notifCount">
+    🔔
+    <span class="notif-dot" *ngIf="notifCount > 0"></span>
+  </div>
+
+  <div class="tb-user">
+    <div class="tb-avatar">{{ auth.currentUser?.name?.charAt(0) }}</div>
+  </div>
+</div>

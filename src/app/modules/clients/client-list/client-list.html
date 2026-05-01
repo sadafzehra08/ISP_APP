@@ -1,0 +1,215 @@
+<div class="clients-page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-left">
+      <h1 class="ph-title">Client Management</h1>
+      <p class="ph-sub">Manage all ISP clients, connections & status</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn-outline">📤 Export CSV</button>
+      <button class="btn-primary" routerLink="/clients/new">+ Add New Client</button>
+    </div>
+  </div>
+
+  <!-- STATUS SUMMARY CARDS -->
+  <div class="status-summary">
+    <div class="ss-card clickable" [class.active-filter]="filter.status === ''" (click)="filter.status=''; onFilterChange()">
+      <div class="ss-icon all">👥</div>
+      <div class="ss-info">
+        <div class="ss-val">{{ statusCounts.total }}</div>
+        <div class="ss-label">Total Clients</div>
+      </div>
+    </div>
+    <div class="ss-card clickable" [class.active-filter]="filter.status === 'active'" (click)="filter.status='active'; onFilterChange()">
+      <div class="ss-icon active">✅</div>
+      <div class="ss-info">
+        <div class="ss-val green">{{ statusCounts.active }}</div>
+        <div class="ss-label">Active</div>
+      </div>
+    </div>
+    <div class="ss-card clickable" [class.active-filter]="filter.status === 'suspended'" (click)="filter.status='suspended'; onFilterChange()">
+      <div class="ss-icon suspended">⏸️</div>
+      <div class="ss-info">
+        <div class="ss-val amber">{{ statusCounts.suspended }}</div>
+        <div class="ss-label">Suspended</div>
+      </div>
+    </div>
+    <div class="ss-card clickable" [class.active-filter]="filter.status === 'disconnected'" (click)="filter.status='disconnected'; onFilterChange()">
+      <div class="ss-icon disconnected">🔴</div>
+      <div class="ss-info">
+        <div class="ss-val red">{{ statusCounts.disconnected }}</div>
+        <div class="ss-label">Disconnected</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS BAR -->
+  <div class="filters-bar">
+    <div class="fb-search">
+      <span class="fb-search-icon">🔍</span>
+      <input type="text" [(ngModel)]="filter.search"
+        (input)="onSearchChange()"
+        placeholder="Search by name, code, phone, CNIC..." />
+      <button *ngIf="filter.search" class="clear-search" (click)="filter.search=''; onFilterChange()">✕</button>
+    </div>
+    <div class="fb-filters">
+      <select [(ngModel)]="filter.status" (change)="onFilterChange()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+        <option value="disconnected">Disconnected</option>
+      </select>
+      <select [(ngModel)]="filter.areaId" (change)="onFilterChange()">
+        <option [ngValue]="undefined">All Areas</option>
+        <option *ngFor="let a of areas" [value]="a.id">{{ a.name }}</option>
+      </select>
+      <select [(ngModel)]="filter.packageId" (change)="onFilterChange()">
+        <option [ngValue]="undefined">All Packages</option>
+        <option *ngFor="let p of packages" [value]="p.id">{{ p.name }}</option>
+      </select>
+      <button class="btn-clear" *ngIf="hasActiveFilters" (click)="clearFilters()">✕ Clear Filters</button>
+    </div>
+    <div class="fb-results">
+      <span>Showing <strong>{{ filteredClients.length }}</strong> of <strong>{{ totalRecords }}</strong> clients</span>
+    </div>
+  </div>
+
+  <!-- BULK ACTIONS -->
+  <div class="bulk-bar" *ngIf="selectedClients.size > 0">
+    <span>{{ selectedClients.size }} client(s) selected</span>
+    <button class="bulk-btn amber">⏸ Suspend Selected</button>
+    <button class="bulk-btn red">🗑 Delete Selected</button>
+    <button class="bulk-btn blue">📧 Send Reminder</button>
+    <button class="bulk-btn-cancel" (click)="selectedClients.clear()">✕ Clear Selection</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th class="th-check">
+            <input type="checkbox" [checked]="allSelected" (change)="toggleAll($event)" />
+          </th>
+          <th>Client</th>
+          <th>Contact</th>
+          <th>Area</th>
+          <th>Package</th>
+          <th>IP Address</th>
+          <th>Expiry</th>
+          <th>Status</th>
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of filteredClients"
+          [class.selected]="selectedClients.has(client.id!)"
+          (click)="viewClient(client.id!)">
+          <td class="td-check" (click)="$event.stopPropagation()">
+            <input type="checkbox"
+              [checked]="selectedClients.has(client.id!)"
+              (change)="toggleSelect(client.id!)" />
+          </td>
+          <td class="td-client">
+            <div class="client-avatar">{{ client.fullName.charAt(0) }}</div>
+            <div class="client-info">
+              <div class="client-name">{{ client.fullName }}</div>
+              <div class="client-code">{{ client.clientCode }}</div>
+            </div>
+          </td>
+          <td class="td-contact">
+            <div class="c-phone">📞 {{ client.phone }}</div>
+            <div class="c-cnic">🪪 {{ client.cnic }}</div>
+          </td>
+          <td><span class="area-pill">{{ client.areaName }}</span></td>
+          <td class="td-pkg">
+            <span class="pkg-pill">{{ client.packageName }}</span>
+          </td>
+          <td class="td-ip mono">{{ client.ipAddress || '—' }}</td>
+          <td class="td-expiry">
+            <span [class.expiring]="isExpiringSoon(client.expiryDate!)">
+              {{ client.expiryDate | date:'dd MMM yy' }}
+              <span class="exp-warn" *ngIf="isExpiringSoon(client.expiryDate!)">⚠️</span>
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class]="client.status"
+              (click)="openStatusModal(client, $event)">
+              {{ client.status | titlecase }}
+            </span>
+          </td>
+          <td class="td-actions" (click)="$event.stopPropagation()">
+            <button class="act-btn view" (click)="viewClient(client.id!)" title="View Details">👁</button>
+            <button class="act-btn edit" (click)="editClient(client.id!, $event)" title="Edit">✏️</button>
+            <button class="act-btn status" (click)="openStatusModal(client, $event)" title="Change Status">🔄</button>
+            <button class="act-btn del" (click)="confirmDelete(client, $event)" title="Delete">🗑</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredClients.length === 0">
+          <td colspan="9" class="no-data">
+            <div class="no-data-inner">
+              <span class="no-data-icon">🔍</span>
+              <p>No clients found matching your filters</p>
+              <button class="btn-outline" (click)="clearFilters()">Clear Filters</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="pg-btn" [disabled]="filter.page === 1" (click)="goToPage(filter.page - 1)">‹ Prev</button>
+    <button class="pg-btn" *ngFor="let p of pages"
+      [class.active]="filter.page === p"
+      (click)="goToPage(p)">{{ p }}</button>
+    <button class="pg-btn" [disabled]="filter.page === totalPages" (click)="goToPage(filter.page + 1)">Next ›</button>
+    <span class="pg-info">Page {{ filter.page }} of {{ totalPages }}</span>
+  </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon danger">🗑️</div>
+    <h3>Delete Client?</h3>
+    <p>Are you sure you want to delete <strong>{{ clientToDelete?.fullName }}</strong>?<br>This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="showDeleteModal=false">Cancel</button>
+      <button class="modal-btn danger" (click)="deleteConfirmed()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS MODAL -->
+<div class="modal-overlay" *ngIf="showStatusModal" (click)="showStatusModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon info">🔄</div>
+    <h3>Change Client Status</h3>
+    <p>Update status for <strong>{{ clientToStatus?.fullName }}</strong></p>
+    <div class="status-options">
+      <label class="s-opt" [class.selected]="newStatus === 'active'">
+        <input type="radio" name="status" value="active" [(ngModel)]="newStatus" />
+        <span class="s-opt-icon">✅</span>
+        <span class="s-opt-label">Active</span>
+      </label>
+      <label class="s-opt" [class.selected]="newStatus === 'suspended'">
+        <input type="radio" name="status" value="suspended" [(ngModel)]="newStatus" />
+        <span class="s-opt-icon">⏸️</span>
+        <span class="s-opt-label">Suspended</span>
+      </label>
+      <label class="s-opt" [class.selected]="newStatus === 'disconnected'">
+        <input type="radio" name="status" value="disconnected" [(ngModel)]="newStatus" />
+        <span class="s-opt-icon">🔴</span>
+        <span class="s-opt-label">Disconnected</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="showStatusModal=false">Cancel</button>
+      <button class="modal-btn primary" (click)="changeStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
