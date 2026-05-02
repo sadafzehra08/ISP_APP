@@ -1,0 +1,270 @@
+<div class="packages-page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-left">
+      <h1 class="ph-title">Internet Packages</h1>
+      <p class="ph-sub">Manage all ISP subscription packages & pricing</p>
+    </div>
+    <div class="ph-right">
+      <div class="view-toggle">
+        <button [class.active]="viewMode==='cards'" (click)="viewMode='cards'" title="Card View">⊞</button>
+        <button [class.active]="viewMode==='table'" (click)="viewMode='table'" title="Table View">☰</button>
+      </div>
+      <div class="filter-tabs">
+        <button [class.active]="filterStatus==='all'" (click)="filterStatus='all'">All</button>
+        <button [class.active]="filterStatus==='active'" (click)="filterStatus='active'">Active</button>
+        <button [class.active]="filterStatus==='inactive'" (click)="filterStatus='inactive'">Inactive</button>
+      </div>
+      <button class="btn-primary" routerLink="/packages/new">+ Add Package</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="summary-strip">
+    <div class="ss-item">
+      <div class="ss-num">{{ stats.total }}</div>
+      <div class="ss-label">Total Packages</div>
+    </div>
+    <div class="ss-div"></div>
+    <div class="ss-item">
+      <div class="ss-num green">{{ stats.active }}</div>
+      <div class="ss-label">Active</div>
+    </div>
+    <div class="ss-div"></div>
+    <div class="ss-item">
+      <div class="ss-num blue">{{ stats.totalSubscribers | number }}</div>
+      <div class="ss-label">Total Subscribers</div>
+    </div>
+    <div class="ss-div"></div>
+    <div class="ss-item">
+      <div class="ss-num amber">{{ formatPrice(stats.avgPrice) }}</div>
+      <div class="ss-label">Avg. Monthly Price</div>
+    </div>
+  </div>
+
+  <!-- ===================== CARD VIEW ===================== -->
+  <div class="packages-grid" *ngIf="viewMode === 'cards'">
+    <div class="pkg-card"
+      *ngFor="let pkg of filteredPackages; let i = index"
+      [class.inactive]="!pkg.isActive"
+      [class.premium-card]="pkg.tier === 'premium'"
+      [style.--card-delay]="(i * 0.08) + 's'">
+
+      <!-- Glow BG -->
+      <div class="card-glow" [style.background]="getTierConfig(pkg.tier).glow"></div>
+
+      <!-- TOP BADGE + ACTIONS -->
+      <div class="card-top">
+        <div class="tier-badge"
+          [style.background]="getTierConfig(pkg.tier).badge"
+          [style.color]="getTierConfig(pkg.tier).badgeText">
+          {{ getTierConfig(pkg.tier).icon }} {{ getTierConfig(pkg.tier).label }}
+        </div>
+        <div class="card-actions">
+          <span class="status-dot" [class.active]="pkg.isActive" [class.inactive]="!pkg.isActive"
+            [title]="pkg.isActive ? 'Active' : 'Inactive'"></span>
+          <button class="ca-btn edit" (click)="editPackage(pkg.id!)" title="Edit Package">✏️</button>
+          <button class="ca-btn toggle"
+            (click)="confirmToggle(pkg)"
+            [title]="pkg.isActive ? 'Deactivate' : 'Activate'">
+            {{ pkg.isActive ? '⏸' : '▶' }}
+          </button>
+          <button class="ca-btn del" (click)="confirmDelete(pkg)" title="Delete">🗑</button>
+        </div>
+      </div>
+
+      <!-- PACKAGE ICON + NAME -->
+      <div class="card-hero">
+        <div class="pkg-icon-wrap" [style.background]="getTierConfig(pkg.tier).gradient">
+          <span class="pkg-icon">{{ getTierConfig(pkg.tier).icon }}</span>
+        </div>
+        <div class="pkg-name">{{ pkg.name }}</div>
+        <div class="pkg-desc">{{ pkg.description }}</div>
+      </div>
+
+      <!-- SPEED DISPLAY -->
+      <div class="speed-block">
+        <div class="speed-row">
+          <div class="speed-item">
+            <div class="speed-arrow down">↓</div>
+            <div class="speed-val" [style.color]="getTierConfig(pkg.tier).badgeText">
+              {{ formatSpeed(pkg.speedMbps) }}
+            </div>
+            <div class="speed-lbl">Download</div>
+          </div>
+          <div class="speed-sep"></div>
+          <div class="speed-item">
+            <div class="speed-arrow up">↑</div>
+            <div class="speed-val" [style.color]="getTierConfig(pkg.tier).badgeText">
+              {{ formatSpeed(pkg.uploadSpeedMbps) }}
+            </div>
+            <div class="speed-lbl">Upload</div>
+          </div>
+          <div class="speed-sep"></div>
+          <div class="speed-item">
+            <div class="speed-arrow burst">⚡</div>
+            <div class="speed-val" [style.color]="getTierConfig(pkg.tier).badgeText">
+              {{ formatSpeed(pkg.burstSpeed || 0) }}
+            </div>
+            <div class="speed-lbl">Burst</div>
+          </div>
+        </div>
+        <!-- Speed Bar -->
+        <div class="speed-bar-wrap">
+          <div class="speed-bar-fill"
+            [style.background]="getTierConfig(pkg.tier).gradient"
+            [style.width.%]="(pkg.speedMbps / 100) * 100 > 100 ? 100 : (pkg.speedMbps / 100) * 100">
+          </div>
+        </div>
+      </div>
+
+      <!-- PRICING -->
+      <div class="pricing-block">
+        <div class="price-main">
+          <span class="price-currency">₨</span>
+          <span class="price-amount">{{ pkg.priceMonthly | number }}</span>
+          <span class="price-period">/mo</span>
+        </div>
+        <div class="price-alts">
+          <span class="pa-item">Quarterly: <strong>{{ formatPrice(pkg.priceQuarterly || 0) }}</strong></span>
+          <span class="pa-sep">·</span>
+          <span class="pa-item">Yearly: <strong>{{ formatPrice(pkg.priceYearly || 0) }}</strong></span>
+        </div>
+      </div>
+
+      <!-- FEATURES LIST -->
+      <div class="features-list">
+        <div class="feat-item" *ngFor="let feat of pkg.features">
+          <span class="feat-check" [style.color]="getTierConfig(pkg.tier).badgeText">✓</span>
+          <span>{{ feat }}</span>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="card-footer">
+        <div class="cf-stat">
+          <div class="cfs-val">{{ pkg.subscribersCount | number }}</div>
+          <div class="cfs-lbl">Subscribers</div>
+        </div>
+        <div class="cf-stat">
+          <div class="cfs-val">{{ pkg.maxDevices }}</div>
+          <div class="cfs-lbl">Devices</div>
+        </div>
+        <div class="cf-stat">
+          <div class="cfs-val">{{ pkg.validityDays }}d</div>
+          <div class="cfs-lbl">Validity</div>
+        </div>
+        <div class="cf-stat">
+          <div class="cfs-val">{{ pkg.dataLimitGb ? pkg.dataLimitGb + 'GB' : '∞' }}</div>
+          <div class="cfs-lbl">Data</div>
+        </div>
+      </div>
+
+      <!-- INACTIVE OVERLAY -->
+      <div class="inactive-overlay" *ngIf="!pkg.isActive">
+        <div class="io-text">⏸ Inactive</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== TABLE VIEW ===================== -->
+  <div class="table-card" *ngIf="viewMode === 'table'">
+    <table class="pkg-table">
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Tier</th>
+          <th>Speed (↓/↑)</th>
+          <th>Price/mo</th>
+          <th>Quarterly</th>
+          <th>Yearly</th>
+          <th>Devices</th>
+          <th>Subscribers</th>
+          <th>Status</th>
+          <th class="th-act">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pkg of filteredPackages">
+          <td class="td-name">
+            <div class="tn-icon" [style.background]="getTierConfig(pkg.tier).gradient">
+              {{ getTierConfig(pkg.tier).icon }}
+            </div>
+            <div>
+              <div class="tn-label">{{ pkg.name }}</div>
+              <div class="tn-desc">{{ pkg.description }}</div>
+            </div>
+          </td>
+          <td>
+            <span class="tier-pill"
+              [style.background]="getTierConfig(pkg.tier).badge"
+              [style.color]="getTierConfig(pkg.tier).badgeText">
+              {{ getTierConfig(pkg.tier).label }}
+            </span>
+          </td>
+          <td class="mono speed-td">
+            <span class="dl">↓ {{ formatSpeed(pkg.speedMbps) }}</span>
+            <span class="ul"> / ↑ {{ formatSpeed(pkg.uploadSpeedMbps) }}</span>
+          </td>
+          <td class="mono price-td">{{ formatPrice(pkg.priceMonthly) }}</td>
+          <td class="mono">{{ formatPrice(pkg.priceQuarterly || 0) }}</td>
+          <td class="mono">{{ formatPrice(pkg.priceYearly || 0) }}</td>
+          <td class="center">{{ pkg.maxDevices }}</td>
+          <td class="center subs-count">{{ pkg.subscribersCount | number }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="{'active': pkg.isActive, 'inactive': !pkg.isActive}">
+              {{ pkg.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="td-act">
+            <button class="act-btn edit" (click)="editPackage(pkg.id!)" title="Edit">✏️</button>
+            <button class="act-btn toggle" (click)="confirmToggle(pkg)" [title]="pkg.isActive ? 'Deactivate' : 'Activate'">
+              {{ pkg.isActive ? '⏸' : '▶' }}
+            </button>
+            <button class="act-btn del" (click)="confirmDelete(pkg)" title="Delete">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon">🗑️</div>
+    <h3>Delete Package?</h3>
+    <p>Delete <strong>{{ packageToDelete?.name }}</strong> package?<br>
+      <span class="warn-text" *ngIf="(packageToDelete?.subscribersCount || 0) > 0">
+        ⚠️ {{ packageToDelete?.subscribersCount }} active subscribers will be affected!
+      </span>
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="showDeleteModal=false">Cancel</button>
+      <button class="modal-btn danger" (click)="deleteConfirmed()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOGGLE MODAL -->
+<div class="modal-overlay" *ngIf="showToggleModal" (click)="showToggleModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon">{{ packageToToggle?.isActive ? '⏸️' : '▶️' }}</div>
+    <h3>{{ packageToToggle?.isActive ? 'Deactivate' : 'Activate' }} Package?</h3>
+    <p>
+      {{ packageToToggle?.isActive
+        ? 'Deactivating will stop new subscriptions to this package.'
+        : 'Activating will allow new subscriptions.' }}
+      <br><strong>{{ packageToToggle?.name }}</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="showToggleModal=false">Cancel</button>
+      <button class="modal-btn primary" (click)="toggleConfirmed()">
+        {{ packageToToggle?.isActive ? 'Deactivate' : 'Activate' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -28,6 +28,11 @@ const routes: Routes = [
   path: 'invoices',
   loadChildren: () => import('./modules/invoices/invoices.module').then(m => m.InvoicesModule)
 },
+{
+  path: 'payments',
+  loadChildren: () => import('./modules/payments/payments-module').then(m => m.PaymentsModule)
+},
+{ path: 'packages', loadChildren: () => import('./modules/packages/packages-module').then(m => m.PackagesModule) },
   { path: '**', redirectTo: 'login' }
 ];
 @NgModule({

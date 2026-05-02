@@ -7,8 +7,8 @@
     </div>
   </div>
 
-  <!-- PRINTABLE INVOICE -->
-  <div class="invoice-paper">
+  <div class="invoice-paper" *ngIf="invoice">
+
     <!-- Company Header -->
     <div class="inv-header">
       <div class="company-info">
@@ -17,9 +17,17 @@
         <div class="company-detail">📞 0300-0000000 | ✉️ billing@netpro.pk</div>
       </div>
       <div class="inv-meta">
-        <div class="inv-no-big">{{ invoice?.invoiceNo }}</div>
+        <div class="inv-no-big">{{ invoice.invoiceNo }}</div>
         <div class="inv-status-print">
-          <span class="status-badge" [class]="invoice?.status">{{ invoice?.status | titlecase }}</span>
+          <span class="status-badge"
+            [ngClass]="{
+              'paid':      invoice.status === 'paid',
+              'unpaid':    invoice.status === 'unpaid',
+              'overdue':   invoice.status === 'overdue',
+              'cancelled': invoice.status === 'cancelled'
+            }">
+            {{ invoice.status | titlecase }}
+          </span>
         </div>
       </div>
     </div>
@@ -30,16 +38,28 @@
     <div class="inv-parties">
       <div class="billed-to">
         <div class="section-label">Billed To</div>
-        <div class="party-name">{{ invoice?.clientName }}</div>
-        <div class="party-detail">{{ invoice?.clientCode }}</div>
-        <div class="party-detail">📞 {{ invoice?.clientPhone }}</div>
-        <div class="party-detail">📍 {{ invoice?.clientAddress }}</div>
+        <div class="party-name">{{ invoice.clientName }}</div>
+        <div class="party-detail">{{ invoice.clientCode }}</div>
+        <div class="party-detail">📞 {{ invoice.clientPhone }}</div>
+        <div class="party-detail">📍 {{ invoice.clientAddress }}</div>
       </div>
       <div class="inv-dates-box">
-        <div class="date-row"><span>Issue Date</span><strong>{{ invoice?.issueDate | date:'dd MMM yyyy' }}</strong></div>
-        <div class="date-row"><span>Due Date</span><strong>{{ invoice?.dueDate | date:'dd MMM yyyy' }}</strong></div>
-        <div class="date-row" *ngIf="invoice?.paymentDate"><span>Paid On</span><strong class="green">{{ invoice?.paymentDate | date:'dd MMM yyyy' }}</strong></div>
-        <div class="date-row" *ngIf="invoice?.paymentMethod"><span>Method</span><strong>{{ invoice?.paymentMethod | titlecase }}</strong></div>
+        <div class="date-row">
+          <span>Issue Date</span>
+          <strong>{{ invoice.issueDate | date:'dd MMM yyyy' }}</strong>
+        </div>
+        <div class="date-row">
+          <span>Due Date</span>
+          <strong>{{ invoice.dueDate | date:'dd MMM yyyy' }}</strong>
+        </div>
+        <div class="date-row" *ngIf="invoice.paymentDate">
+          <span>Paid On</span>
+          <strong class="green">{{ invoice.paymentDate | date:'dd MMM yyyy' }}</strong>
+        </div>
+        <div class="date-row" *ngIf="invoice.paymentMethod">
+          <span>Method</span>
+          <strong>{{ invoice.paymentMethod | titlecase }}</strong>
+        </div>
       </div>
     </div>
 
@@ -55,32 +75,47 @@
       <tbody>
         <tr>
           <td>
-            <div class="item-name">{{ invoice?.packageName }}</div>
+            <div class="item-name">{{ invoice.packageName }}</div>
             <div class="item-sub">Monthly internet service</div>
           </td>
-          <td>{{ invoice?.areaName }}</td>
-          <td class="right mono">₨{{ invoice?.amount | number }}</td>
+          <td>{{ invoice.areaName }}</td>
+          <td class="right mono">₨{{ invoice.amount | number }}</td>
         </tr>
       </tbody>
     </table>
 
     <!-- Totals -->
     <div class="totals-box">
-      <div class="total-row"><span>Subtotal</span><strong>₨{{ invoice?.amount | number }}</strong></div>
-      <div class="total-row" *ngIf="invoice?.discount"><span>Discount</span><strong class="red">- ₨{{ invoice?.discount | number }}</strong></div>
-      <div class="total-row" *ngIf="invoice?.tax"><span>Tax</span><strong>₨{{ invoice?.tax | number }}</strong></div>
-      <div class="total-row grand"><span>Total</span><strong class="big">₨{{ invoice?.totalAmount | number }}</strong></div>
-      <div class="total-row" *ngIf="invoice?.amountPaid"><span>Amount Paid</span><strong class="green">₨{{ invoice?.amountPaid | number }}</strong></div>
-      <!-- <div class="total-row balance" *ngIf="(invoice?.balance || 0) > 0"><span>Balance Due</span><strong class="red big">₨{{ invoice?.balance | number }}</strong></div> -->
-  <div class="total-row balance" *ngIf="(invoice?.balance ?? 0) > 0">
-  <span>Balance Due</span>
-  <strong class="red big">₨{{ invoice?.balance ?? 0 | number }}</strong>
-</div>
+      <div class="total-row">
+        <span>Subtotal</span>
+        <strong>₨{{ invoice.amount | number }}</strong>
+      </div>
+      <div class="total-row" *ngIf="invoice.discount">
+        <span>Discount</span>
+        <strong class="red">- ₨{{ invoice.discount | number }}</strong>
+      </div>
+      <div class="total-row" *ngIf="invoice.tax">
+        <span>Tax</span>
+        <strong>₨{{ invoice.tax | number }}</strong>
+      </div>
+      <div class="total-row grand">
+        <span>Total</span>
+        <strong class="big">₨{{ invoice.totalAmount | number }}</strong>
+      </div>
+      <div class="total-row" *ngIf="invoice.amountPaid">
+        <span>Amount Paid</span>
+        <strong class="green">₨{{ invoice.amountPaid | number }}</strong>
+      </div>
+      <div class="total-row balance" *ngIf="(invoice.balance ?? 0) > 0">
+        <span>Balance Due</span>
+        <strong class="red big">₨{{ (invoice.balance ?? 0) | number }}</strong>
+      </div>
     </div>
 
     <!-- Footer -->
     <div class="inv-footer">
       <p>Thank you for your business! For support contact: 0300-0000000</p>
     </div>
+
   </div>
 </div>

@@ -1,0 +1,131 @@
+<div class="detail-page" *ngIf="payment; else loading">
+
+  <!-- HEADER -->
+  <div class="detail-header no-print">
+    <button class="back-btn" (click)="back()">← Back to Payments</button>
+    <div class="dh-right">
+      <button class="btn-outline" (click)="print()">🖨️ Print Receipt</button>
+      <button class="btn-primary" (click)="edit()">✏️ Edit</button>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="pay-hero">
+    <div class="hero-left">
+      <div class="hero-avatar">{{ payment.clientName?.charAt(0) }}</div>
+      <div class="hero-info">
+        <div class="hero-name">{{ payment.clientName }}</div>
+        <div class="hero-code">{{ payment.clientCode }} · {{ payment.areaName }}</div>
+        <div class="hero-meta">
+          <span>📞 {{ payment.clientPhone }}</span>
+          <span>📡 {{ payment.packageName }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-amount">₨{{ payment.amount | number }}</div>
+      <div class="hero-pay-no">{{ payment.paymentNo }}</div>
+      <span class="status-badge"
+        [ngClass]="{
+          'completed': payment.status === 'completed',
+          'pending':   payment.status === 'pending',
+          'failed':    payment.status === 'failed',
+          'refunded':  payment.status === 'refunded'
+        }">
+        {{ payment.status | titlecase }}
+      </span>
+    </div>
+  </div>
+
+  <!-- DETAIL GRID -->
+  <div class="detail-grid">
+
+    <!-- Card 1: Payment Details -->
+    <div class="info-card">
+      <div class="info-title">💳 Payment Details</div>
+      <div class="info-rows">
+        <div class="ir">
+          <span>Payment No</span>
+          <strong class="mono purple">{{ payment.paymentNo }}</strong>
+        </div>
+        <div class="ir">
+          <span>Invoice No</span>
+          <strong class="mono">{{ payment.invoiceNo }}</strong>
+        </div>
+        <div class="ir">
+          <span>Amount</span>
+          <strong class="big-green">₨{{ payment.amount | number }}</strong>
+        </div>
+        <div class="ir">
+          <span>Payment Date</span>
+          <strong>{{ payment.paymentDate | date:'dd MMM yyyy' }}</strong>
+        </div>
+        <div class="ir">
+          <span>Received By</span>
+          <strong>{{ payment.receivedBy || '—' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Method & Transaction -->
+    <div class="info-card">
+      <div class="info-title">📡 Method & Transaction</div>
+      <div class="method-display">
+        <div class="md-icon">{{ getMethodIcon(payment.method) }}</div>
+        <div class="md-label">{{ getMethodLabel(payment.method) }}</div>
+      </div>
+      <div class="info-rows" style="margin-top:.75rem">
+        <div class="ir" *ngIf="payment.transactionId">
+          <span>Transaction ID</span>
+          <strong class="mono purple">{{ payment.transactionId }}</strong>
+        </div>
+        <div class="ir">
+          <span>Status</span>
+          <span class="status-badge"
+            [ngClass]="{
+              'completed': payment.status === 'completed',
+              'pending':   payment.status === 'pending',
+              'failed':    payment.status === 'failed',
+              'refunded':  payment.status === 'refunded'
+            }">
+            {{ payment.status | titlecase }}
+          </span>
+        </div>
+        <div class="ir">
+          <span>Created At</span>
+          <strong>{{ payment.createdAt | date:'dd MMM yyyy' }}</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRINT-ONLY RECEIPT -->
+  <div class="receipt-section print-only">
+    <div class="rp-company">
+      <div class="rp-logo">NetPro ISP</div>
+      <div class="rp-tagline">Payment Receipt</div>
+    </div>
+    <hr />
+    <div>Receipt: {{ payment.paymentNo }} | Invoice: {{ payment.invoiceNo }}</div>
+    <div>Client: {{ payment.clientName }} ({{ payment.clientCode }})</div>
+    <div>Phone: {{ payment.clientPhone }}</div>
+    <hr />
+    <div class="rp-big-amount">₨{{ payment.amount | number }}</div>
+    <div>Method: {{ getMethodLabel(payment.method) }}</div>
+    <div *ngIf="payment.transactionId">Txn ID: {{ payment.transactionId }}</div>
+    <div>Date: {{ payment.paymentDate | date:'dd MMM yyyy' }}</div>
+    <div>Received By: {{ payment.receivedBy || '—' }}</div>
+    <hr />
+    <div>Status: {{ payment.status | titlecase }}</div>
+    <div style="margin-top:1rem; text-align:center">Thank you — NetPro ISP</div>
+  </div>
+
+</div>
+
+<!-- LOADING FALLBACK -->
+<ng-template #loading>
+  <div class="loading-state">
+    <p>Loading payment details...</p>
+  </div>
+</ng-template>

@@ -1,3 +1,4 @@
+// invoice.model.ts mein add karo
 export interface Invoice {
   id?: number;
   invoiceNo?: string;
@@ -5,20 +6,19 @@ export interface Invoice {
   clientName?: string;
   clientCode?: string;
   clientPhone?: string;
-  clientAddress?: string;
-  packageName?: string;
-  areaName?: string;
+  clientAddress?: string;   // ← add
+  packageName?: string;     // ← add
+  areaName?: string;        // ← add
   amount: number;
-  tax?: number;
+  tax?: number;             // ← add
   discount?: number;
-  totalAmount?: number;
-  amountPaid?: number;
-  balance?: number;
-  status: 'unpaid' | 'paid' | 'partial' | 'overdue';
+  totalAmount: number;
+  amountPaid?: number;      // ← add
+  balance?: number;         // ← add
   issueDate: string;
   dueDate: string;
-  paymentDate?: string;
-  paymentMethod?: string;
-  notes?: string;
+  billingMonth?: string;
+status: 'unpaid' | 'paid' | 'overdue' | 'cancelled' | 'partial';  paymentDate?: string;     // ← add
+  paymentMethod?: string;   // ← add
   createdAt?: string;
 }

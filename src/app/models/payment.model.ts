@@ -1,13 +1,20 @@
 export interface Payment {
   id?: number;
-  invoiceId: number;
-  invoiceNo?: string;
+  paymentNo?: string;
   clientId: number;
   clientName?: string;
-  amountPaid: number;
+  clientCode?: string;
+  clientPhone?: string;
+  invoiceId?: number;
+  invoiceNo?: string;
+  amount: number;
+  method: 'cash' | 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cheque' | 'online';
+  status: 'completed' | 'pending' | 'failed' | 'refunded';
   paymentDate: string;
-  paymentMethod: 'cash' | 'bank' | 'easypaisa' | 'jazzcash' | 'online';
-  referenceNo?: string;
-  notes?: string;
   receivedBy?: string;
+  transactionId?: string;
+  notes?: string;
+  packageName?: string;
+  areaName?: string;
+  createdAt?: string;
 }

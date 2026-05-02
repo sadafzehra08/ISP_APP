@@ -1,0 +1,247 @@
+<div class="form-page">
+  <div class="form-header">
+    <button class="back-btn" (click)="cancel()">← Back</button>
+    <div>
+      <h1>{{ isEdit ? 'Edit Package' : 'Add New Package' }}</h1>
+      <p>{{ isEdit ? 'Update package details' : 'Create a new internet package' }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-layout">
+
+      <!-- MAIN -->
+      <div class="form-main">
+
+        <!-- TIER SELECTOR -->
+        <div class="form-card">
+          <div class="card-title">Package Tier</div>
+          <div class="tier-options">
+            <label class="tier-opt" *ngFor="let t of tierOptions"
+              [class.selected]="form.value.tier === t.value"
+              [class.tier-basic]="t.value === 'basic' && form.value.tier === t.value"
+              [class.tier-advanced]="t.value === 'advanced' && form.value.tier === t.value"
+              [class.tier-silver]="t.value === 'silver' && form.value.tier === t.value"
+              [class.tier-premium]="t.value === 'premium' && form.value.tier === t.value">
+              <input type="radio" [value]="t.value" formControlName="tier" style="display:none" />
+              <div class="to-icon">{{ t.icon }}</div>
+              <div class="to-label">{{ t.label }}</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- BASIC INFO -->
+        <div class="form-card">
+          <div class="card-title">Package Details</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Package Name <span class="req">*</span></label>
+              <input type="text" formControlName="name" placeholder="e.g. Basic Plan"
+                [class.err]="f['name'].touched && f['name'].invalid" />
+              <div class="err-msg" *ngIf="f['name'].touched && f['name'].invalid">Name required (min 2 chars)</div>
+            </div>
+            <div class="field">
+              <label>Validity (Days) <span class="req">*</span></label>
+              <input type="number" formControlName="validityDays" min="1" />
+            </div>
+            <div class="field">
+              <label>Max Devices <span class="req">*</span></label>
+              <input type="number" formControlName="maxDevices" min="1" />
+            </div>
+            <div class="field">
+              <label>Data Limit (GB)</label>
+              <input type="number" formControlName="dataLimitGb" placeholder="Leave empty = Unlimited" min="1" />
+              <div class="hint">Leave empty for unlimited data</div>
+            </div>
+            <div class="field full">
+              <label>Description</label>
+              <textarea formControlName="description" rows="2" placeholder="Brief description of this package..."></textarea>
+            </div>
+            <div class="field full">
+              <label>Status</label>
+              <div class="toggle-wrap">
+                <label class="toggle-switch">
+                  <input type="checkbox" formControlName="isActive" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">{{ form.value.isActive ? 'Active — accepting new subscribers' : 'Inactive — hidden from new subscribers' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPEED -->
+        <div class="form-card">
+          <div class="card-title">⚡ Speed Configuration</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Download Speed (Mbps) <span class="req">*</span></label>
+              <div class="speed-input-wrap">
+                <span class="si-arrow down">↓</span>
+                <input type="number" formControlName="speedMbps" min="1"
+                  [class.err]="f['speedMbps'].touched && f['speedMbps'].invalid" />
+                <span class="si-unit">Mbps</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Upload Speed (Mbps) <span class="req">*</span></label>
+              <div class="speed-input-wrap">
+                <span class="si-arrow up">↑</span>
+                <input type="number" formControlName="uploadSpeedMbps" min="1" />
+                <span class="si-unit">Mbps</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Burst Speed (Mbps)</label>
+              <div class="speed-input-wrap">
+                <span class="si-arrow burst">⚡</span>
+                <input type="number" formControlName="burstSpeed" min="0" />
+                <span class="si-unit">Mbps</span>
+              </div>
+            </div>
+            <div class="field speed-preview">
+              <label>Speed Preview</label>
+              <div class="speed-bars">
+                <div class="sb-row">
+                  <span class="sb-lbl">↓ Download</span>
+                  <div class="sb-track">
+                    <div class="sb-fill dl" [style.width.%]="(form.value.speedMbps / 200) * 100"></div>
+                  </div>
+                  <span class="sb-val" [style.color]="previewColor">{{ form.value.speedMbps }} Mbps</span>
+                </div>
+                <div class="sb-row">
+                  <span class="sb-lbl">↑ Upload</span>
+                  <div class="sb-track">
+                    <div class="sb-fill ul" [style.width.%]="(form.value.uploadSpeedMbps / 200) * 100"></div>
+                  </div>
+                  <span class="sb-val" style="color:#00e5a0">{{ form.value.uploadSpeedMbps }} Mbps</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRICING -->
+        <div class="form-card">
+          <div class="card-title">💰 Pricing</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Monthly Price (₨) <span class="req">*</span></label>
+              <div class="price-input-wrap">
+                <span class="pi-sym">₨</span>
+                <input type="number" formControlName="priceMonthly" min="1"
+                  [class.err]="f['priceMonthly'].touched && f['priceMonthly'].invalid" />
+              </div>
+              <div class="err-msg" *ngIf="f['priceMonthly'].touched && f['priceMonthly'].invalid">Valid price required</div>
+            </div>
+            <div class="field">
+              <label>Quarterly Price (₨)</label>
+              <div class="price-input-wrap">
+                <span class="pi-sym">₨</span>
+                <input type="number" formControlName="priceQuarterly" min="0" />
+              </div>
+              <div class="hint" *ngIf="form.value.priceMonthly && form.value.priceQuarterly">
+                Save ₨{{ (form.value.priceMonthly * 3) - form.value.priceQuarterly | number }} vs monthly
+              </div>
+            </div>
+            <div class="field">
+              <label>Yearly Price (₨)</label>
+              <div class="price-input-wrap">
+                <span class="pi-sym">₨</span>
+                <input type="number" formControlName="priceYearly" min="0" />
+              </div>
+              <div class="hint" *ngIf="savingPercent > 0">
+                🎉 {{ savingPercent }}% annual saving
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="form-card">
+          <div class="card-title">✅ Features</div>
+          <div class="features-input-row">
+            <input type="text" [(ngModel)]="newFeature" [ngModelOptions]="{standalone: true}"
+              placeholder="Add a feature (e.g. Static IP, 24/7 Support...)"
+              (keyup.enter)="addFeature()" />
+            <button type="button" class="btn-add-feat" (click)="addFeature()">+ Add</button>
+          </div>
+          <div class="features-chips" formArrayName="features">
+            <div class="feat-chip" *ngFor="let feat of featuresArray.controls; let i = index">
+              <span class="fc-check" [style.color]="previewColor">✓</span>
+              <span>{{ feat.value }}</span>
+              <button type="button" class="fc-del" (click)="removeFeature(i)">✕</button>
+            </div>
+            <div class="no-features" *ngIf="featuresArray.length === 0">
+              No features added yet. Click "+ Add" to begin.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR PREVIEW -->
+      <div class="form-sidebar">
+        <div class="preview-card" [class]="'preview-' + form.value.tier">
+          <div class="pc-glow" [style.background]="previewColor + '33'"></div>
+          <div class="pc-top">
+            <div class="pc-tier-badge" [style.color]="previewColor" [style.border-color]="previewColor">
+              {{ getTierIcon(form.value.tier) }} {{ form.value.tier | titlecase }}
+            </div>
+            <span class="pc-status" [class.active]="form.value.isActive">
+              {{ form.value.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <div class="pc-icon-wrap" [style.background]="previewColor + '22'">
+            <span style="font-size:28px">{{ getTierIcon(form.value.tier) }}</span>
+          </div>
+          <div class="pc-name">{{ form.value.name || 'Package Name' }}</div>
+          <div class="pc-desc">{{ form.value.description || 'Package description will appear here' }}</div>
+
+          <div class="pc-speeds">
+            <div class="pcs-item">
+              <span class="pcs-arr" style="color:#00b4ff">↓</span>
+              <span class="pcs-val" [style.color]="previewColor">{{ form.value.speedMbps }}</span>
+              <span class="pcs-lbl">Mbps DL</span>
+            </div>
+            <div class="pcs-sep"></div>
+            <div class="pcs-item">
+              <span class="pcs-arr" style="color:#00e5a0">↑</span>
+              <span class="pcs-val" [style.color]="previewColor">{{ form.value.uploadSpeedMbps }}</span>
+              <span class="pcs-lbl">Mbps UL</span>
+            </div>
+          </div>
+
+          <div class="pc-price">
+            <span class="pc-currency">₨</span>
+            <span class="pc-amount">{{ form.value.priceMonthly | number }}</span>
+            <span class="pc-period">/mo</span>
+          </div>
+
+          <div class="pc-feats">
+            <div class="pcf-item" *ngFor="let f of featuresArray.controls | slice:0:5">
+              <span [style.color]="previewColor">✓</span> {{ f.value }}
+            </div>
+            <div class="pcf-more" *ngIf="featuresArray.length > 5">
+              +{{ featuresArray.length - 5 }} more features
+            </div>
+          </div>
+
+          <div class="pc-footer">
+            <div class="pcf-stat"><strong>{{ form.value.maxDevices }}</strong><span>Devices</span></div>
+            <div class="pcf-stat"><strong>{{ form.value.validityDays }}d</strong><span>Validity</span></div>
+            <div class="pcf-stat"><strong>{{ form.value.dataLimitGb || '∞' }}</strong><span>Data</span></div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <button type="submit" class="btn-save" [disabled]="saving">
+            {{ saving ? 'Saving...' : (isEdit ? '💾 Update Package' : '📦 Create Package') }}
+          </button>
+          <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
