@@ -1,0 +1,299 @@
+// ── receipt-list.scss ─────────────────────────────────────────────────────
+
+.receipts-page { padding: 1.5rem; }
+
+// ── Header ────────────────────────────────────────────────────────────────
+.page-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 1.5rem;
+  h1 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+  p  { font-size: 12px; color: var(--text-muted); margin: 0; }
+}
+
+.btn-outline {
+  padding: 8px 14px; border: 1px solid var(--border);
+  border-radius: 8px; background: transparent;
+  color: var(--text-muted); font-size: 13px; cursor: pointer;
+  &:hover { border-color: var(--primary); color: var(--primary); }
+}
+
+// ── Summary Cards ─────────────────────────────────────────────────────────
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 1.25rem;
+  @media (max-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 12px; padding: .9rem 1rem;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-xs); transition: all .2s;
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+  &.highlight { border-color: rgba(0,210,150,0.25); }
+}
+
+.stat-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  &.blue   { background: var(--primary-10); }
+  &.teal   { background: var(--teal-bg);    }
+  &.green  { background: var(--green-bg);   }
+  &.purple { background: rgba(139,92,246,.1); }
+}
+
+.stat-val {
+  font-size: 20px; font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'DM Mono', monospace; line-height: 1;
+  &.teal   { color: #00d2a0; }
+  &.green  { color: var(--green); }
+  &.purple { color: #8b5cf6; }
+}
+
+.stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+// ── Filters ───────────────────────────────────────────────────────────────
+.filters-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem; flex-wrap: wrap;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 12px; padding: 12px 16px;
+  box-shadow: var(--shadow-xs);
+}
+
+.fb-search {
+  flex: 1; min-width: 200px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card-alt); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0 12px; transition: all .2s;
+  &:focus-within { border-color: var(--border-hover); box-shadow: 0 0 0 3px var(--primary-10); }
+  span   { color: var(--text-muted); font-size: 13px; }
+  input  {
+    flex: 1; background: none; border: none;
+    color: var(--text-primary); font-size: 13px; padding: 9px 0; outline: none;
+    &::placeholder { color: var(--text-hint); }
+  }
+  button {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 12px;
+    &:hover { color: var(--red); }
+  }
+}
+
+.fb-selects {
+  display: flex; gap: 8px; align-items: center;
+
+  select, input[type=date] {
+    background: var(--bg-card-alt); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px;
+    color: var(--text-primary); font-size: 12px; outline: none; cursor: pointer;
+    option { background: var(--bg-modal); }
+    &:focus { border-color: var(--border-hover); }
+  }
+}
+
+.btn-clear {
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid var(--red-border); border-radius: 8px;
+  padding: 8px 12px; font-size: 12px; cursor: pointer;
+  &:hover { background: rgba(192,25,43,.16); }
+}
+
+.results-count { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+
+// ── Loading ───────────────────────────────────────────────────────────────
+.loading-state {
+  display: flex; flex-direction: column; align-items: center; padding: 60px 0;
+  color: var(--text-muted);
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border); border-top-color: var(--primary);
+    border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: 10px;
+  }
+  p { font-size: 13px; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Table ─────────────────────────────────────────────────────────────────
+.table-card {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm);
+}
+
+.rec-table {
+  width: 100%; border-collapse: collapse;
+  thead tr { background: var(--bg-table-head); }
+  th {
+    padding: 12px 14px; font-size: 10px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: .08em; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr {
+    transition: background .15s;
+    &:hover { background: var(--bg-hover); }
+    &:not(:last-child) td { border-bottom: 1px solid var(--border); }
+  }
+  td { padding: 12px 14px; font-size: 13px; color: var(--text-primary); vertical-align: middle; }
+}
+
+.mono        { font-family: 'JetBrains Mono', 'DM Mono', monospace; font-size: 12px; }
+.rec-no      { color: var(--primary); }
+.period-cell { color: var(--text-muted); white-space: nowrap; }
+.amount-cell { font-weight: 700; color: #00d2a0; }
+
+.td-client { display: flex; align-items: center; gap: 10px; }
+.c-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #748ffc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.c-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.c-code { font-size: 10px; color: var(--text-hint); font-family: 'JetBrains Mono', monospace; }
+
+.pkg-pill {
+  background: var(--primary-10); color: var(--primary);
+  border: 1px solid var(--primary-20); padding: 3px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+
+.method-pill {
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(0,180,255,0.1); color: var(--primary);
+  border: 1px solid rgba(0,180,255,0.2);
+}
+
+// ── Action ────────────────────────────────────────────────────────────────
+.td-act { white-space: nowrap; }
+
+.act-btn-main {
+  padding: 6px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid; transition: all .2s; white-space: nowrap;
+
+  &.print {
+    background: var(--primary-10); color: var(--primary);
+    border-color: var(--primary-20);
+    &:hover { opacity: .8; }
+  }
+}
+
+// ── Empty ─────────────────────────────────────────────────────────────────
+.no-data td { padding: 3rem; text-align: center; }
+.no-data-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  span { font-size: 36px; opacity: .25; }
+  p    { color: var(--text-muted); font-size: 13px; margin: 0; }
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────
+.pagination { display: flex; gap: 6px; margin-top: 1rem; flex-wrap: wrap; }
+.pg-btn {
+  min-width: 34px; height: 34px; padding: 0 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-muted);
+  font-size: 12px; cursor: pointer; transition: all .2s;
+  &:hover:not([disabled]) { border-color: var(--border-hover); color: var(--primary); }
+  &.active   { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+  &[disabled]{ opacity: .35; cursor: not-allowed; }
+}
+.pg-info { font-size: 11px; color: var(--text-hint); margin-left: 8px; align-self: center; }
+
+// ── Print Modal ───────────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; backdrop-filter: blur(5px);
+}
+
+.receipt-modal {
+  background: var(--bg-modal); border: 1px solid var(--border);
+  border-radius: 16px; width: 420px; max-width: 95vw;
+  box-shadow: 0 24px 64px rgba(0,0,0,.3);
+  animation: modalIn .2s ease; overflow: hidden;
+}
+
+.rm-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; }
+}
+
+.rm-btns { display: flex; gap: 8px; align-items: center; }
+
+.btn-print {
+  padding: 7px 14px; background: var(--primary); color: #031828;
+  border: none; border-radius: 8px; font-size: 12px;
+  font-weight: 700; cursor: pointer;
+  &:hover { opacity: .85; }
+}
+
+.rm-close {
+  width: 28px; height: 28px; border: 1px solid var(--border);
+  border-radius: 7px; background: transparent; color: var(--text-muted);
+  cursor: pointer; font-size: 13px;
+  &:hover { color: var(--red); border-color: var(--red); }
+}
+
+// ── Receipt Paper ─────────────────────────────────────────────────────────
+.receipt-paper {
+  padding: 24px; background: #ffffff; color: #1a1a2e;
+}
+
+.rp-company {
+  text-align: center; margin-bottom: 16px;
+  .rp-logo    { font-size: 20px; font-weight: 800; color: #1a1a2e; letter-spacing: .05em; }
+  .rp-tagline { font-size: 11px; color: #64748b; margin-top: 2px; }
+}
+
+.rp-divider {
+  border: none; border-top: 1px dashed #cbd5e1;
+  margin: 12px 0;
+}
+
+.rp-row {
+  display: flex; justify-content: space-between;
+  align-items: center; font-size: 12px; padding: 4px 0;
+  span   { color: #64748b; }
+  strong {
+    color: #1e293b; font-size: 12px;
+    &.mono { font-family: 'Consolas', monospace; font-size: 11px; color: #3b5cc4; }
+  }
+}
+
+.rp-amount-big {
+  text-align: center; font-size: 32px; font-weight: 800;
+  color: #1d9e75; margin: 8px 0 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rp-amount-label {
+  text-align: center; font-size: 11px; color: #64748b;
+  margin-bottom: 4px;
+}
+
+.rp-footer {
+  text-align: center; font-size: 11px;
+  color: #94a3b8; margin-top: 8px;
+}
+
+// ── Print CSS ─────────────────────────────────────────────────────────────
+@media print {
+  body * { visibility: hidden; }
+  .receipt-paper, .receipt-paper * { visibility: visible; }
+  .receipt-paper {
+    position: fixed; top: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 380px; padding: 24px;
+  }
+  .no-print { display: none !important; }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.93); }
+  to   { opacity: 1; transform: scale(1);   }
+}

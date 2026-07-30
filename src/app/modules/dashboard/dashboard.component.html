@@ -3,7 +3,7 @@
   <!-- WELCOME BANNER -->
   <div class="welcome-banner">
     <div class="wb-left">
-      <h2>{{ greeting }}, {{ auth.currentUser?.name }} 👋</h2>
+      <h2>{{ greeting }}, {{ currentUser?.fullName }} 👋</h2>
       <p>Here's what's happening with your ISP network today</p>
       <div class="wb-stats">
         <div class="wb-stat">
@@ -138,12 +138,12 @@
     <div class="card status-card">
       <div class="card-head">
         <div class="card-title">Client Status</div>
-        <div style="font-size:11px;color:#5a7fa8">Total: {{ stats.totalClients | number }}</div>
+        <div style="font-size:11px;color:var(--text-muted)">Total: {{ stats.totalClients | number }}</div>
       </div>
       <div class="donut-center-wrap">
         <svg viewBox="0 0 42 42" class="donut-svg">
-          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#0d2438" stroke-width="4.5"/>
-          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#00e5a0" stroke-width="4.5"
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--bg-modal)" stroke-width="4.5"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--green)" stroke-width="4.5"
             stroke-dasharray="88.5 11.5" stroke-dashoffset="25"/>
           <circle cx="21" cy="21" r="15.9" fill="none" stroke="#ffb340" stroke-width="4.5"
             stroke-dasharray="11 89" stroke-dashoffset="-63.5"/>
@@ -160,9 +160,9 @@
 
       <div class="status-rows">
         <div class="s-row">
-          <div class="s-dot" style="background:#00e5a0"></div>
+          <div class="s-dot" style="background:var(--green)"></div>
           <div class="s-name">Active</div>
-          <div class="s-bar-wrap"><div class="s-bar" style="background:#00e5a0" [style.width.%]="activePercent"></div></div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:var(--green)" [style.width.%]="activePercent"></div></div>
           <div class="s-count">{{ stats.activeClients | number }}</div>
           <div class="s-pct">{{ activePercent }}%</div>
         </div>
@@ -188,9 +188,9 @@
           <div class="s-pct">6.7%</div>
         </div>
         <div class="s-row" style="border-top:1px solid rgba(0,180,255,0.08);margin-top:8px;padding-top:8px">
-          <div class="s-dot" style="background:#00b4ff"></div>
+          <div class="s-dot" style="background:var(--primary)"></div>
           <div class="s-name">New (month)</div>
-          <div class="s-bar-wrap"><div class="s-bar" style="background:#00b4ff;width:3%"></div></div>
+          <div class="s-bar-wrap"><div class="s-bar" style="background:var(--primary);width:3%"></div></div>
           <div class="s-count">{{ stats.newClientsThisMonth }}</div>
           <div class="s-pct">+3%</div>
         </div>
@@ -226,7 +226,7 @@
     <div class="card">
       <div class="card-head">
         <div class="card-title">Live Activity</div>
-        <div style="font-size:11px;color:#5a7fa8"><i class="live-dot"></i> Real-time</div>
+        <div style="font-size:11px;color:var(--text-muted)"><i class="live-dot"></i> Real-time</div>
       </div>
       <div class="activity-list">
         <!-- <div class="act-item" *ngFor="let log of activityLogs">

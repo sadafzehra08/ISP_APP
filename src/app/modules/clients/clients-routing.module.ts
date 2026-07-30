@@ -4,14 +4,8 @@ import { ClientListComponent } from './client-list/client-list';
 import { ClientForm } from './client-form/client-form';
 import { ClientDetail } from './client-detail/client-detail';
 
-// const routes: Routes = [
-//   { path: '', component: ClientListComponent },
-//   { path: 'new', component: ClientForm },
-//   { path: ':id/edit', component: ClientForm },
-//   { path: ':id', component: ClientDetail },
-// ];
 const routes: Routes = [
-  { path: '', component: ClientListComponent },
+  { path: '', component: ClientListComponent, pathMatch: 'full' },
   { path: 'new', component: ClientForm },
   { path: ':id/edit', component: ClientForm },
   { path: ':id', component: ClientDetail },

@@ -1,3 +1,4 @@
+<!-- invoice-list.html -->
 <div class="invoices-page">
 
   <!-- HEADER -->
@@ -8,51 +9,50 @@
     </div>
     <div class="ph-actions">
       <button class="btn-outline">📤 Export CSV</button>
-      <button class="btn-primary" routerLink="/invoices/new">+ Create Invoice</button>
     </div>
   </div>
 
-  <!-- STATS CARDS -->
+  <!-- SUMMARY CARDS -->
   <div class="stats-row">
-    <div class="stat-card">
+    <div class="stat-card" (click)="setStatus('all')">
       <div class="stat-icon blue">🧾</div>
       <div>
-        <div class="stat-val">{{ summaryStats.total }}</div>
+        <div class="stat-val">{{ summary.total }}</div>
         <div class="stat-label">Total Invoices</div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon green">✅</div>
-      <div>
-        <div class="stat-val green">{{ summaryStats.paid }}</div>
-        <div class="stat-label">Paid</div>
-      </div>
-    </div>
-    <div class="stat-card">
+    <div class="stat-card" (click)="setStatus('unpaid')">
       <div class="stat-icon amber">⏳</div>
       <div>
-        <div class="stat-val amber">{{ summaryStats.unpaid }}</div>
+        <div class="stat-val amber">{{ summary.unpaidCount }}</div>
         <div class="stat-label">Unpaid</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" (click)="setStatus('overdue')">
       <div class="stat-icon red">🔴</div>
       <div>
-        <div class="stat-val red">{{ summaryStats.overdue }}</div>
+        <div class="stat-val red">{{ summary.overdueCount }}</div>
         <div class="stat-label">Overdue</div>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setStatus('paid')">
+      <div class="stat-icon green">✅</div>
+      <div>
+        <div class="stat-val green">{{ summary.paidCount }}</div>
+        <div class="stat-label">Paid</div>
       </div>
     </div>
     <div class="stat-card wide">
       <div class="stat-icon teal">💰</div>
       <div>
-        <div class="stat-val">₨{{ summaryStats.collected | number }}</div>
+        <div class="stat-val teal">₨{{ summary.totalCollected | number }}</div>
         <div class="stat-label">Total Collected</div>
       </div>
     </div>
     <div class="stat-card wide">
       <div class="stat-icon red">❗</div>
       <div>
-        <div class="stat-val red">₨{{ summaryStats.outstanding | number }}</div>
+        <div class="stat-val red">₨{{ summary.totalOutstanding | number }}</div>
         <div class="stat-label">Outstanding</div>
       </div>
     </div>
@@ -60,77 +60,137 @@
 
   <!-- FILTERS -->
   <div class="filters-bar">
+
     <div class="fb-search">
       <span>🔍</span>
-      <input type="text" [(ngModel)]="searchText" (input)="applyFilters()" placeholder="Search client, invoice no..." />
-      <button *ngIf="searchText" (click)="searchText=''; applyFilters()">✕</button>
+      <input type="text" [(ngModel)]="filter.search"
+        (input)="onSearchChange()"
+        placeholder="Search client, invoice no..." />
+      <button *ngIf="filter.search"
+        (click)="filter.search=''; onFilterChange()">✕</button>
     </div>
-    <select [(ngModel)]="filterStatus" (change)="applyFilters()">
-      <option value="">All Status</option>
-      <option value="paid">Paid</option>
-      <option value="unpaid">Unpaid</option>
-      <option value="partial">Partial</option>
-      <option value="overdue">Overdue</option>
-    </select>
-    <input type="month" [(ngModel)]="filterMonth" (change)="applyFilters()" />
-    <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">✕ Clear</button>
-    <span class="results-count">{{ filteredInvoices.length }} invoices</span>
+
+    <div class="fb-selects">
+      <input type="date" [(ngModel)]="fromDate" (change)="onFilterChange()" />
+      <input type="date" [(ngModel)]="toDate"   (change)="onFilterChange()" />
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">✕ Clear</button>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+      <button [class.active]="filter.status === 'all'"
+        (click)="setStatus('all')">All</button>
+      <button [class.active]="filter.status === 'unpaid'"
+        (click)="setStatus('unpaid')">Unpaid</button>
+      <button [class.active]="filter.status === 'overdue'"
+        (click)="setStatus('overdue')">Overdue</button>
+      <button [class.active]="filter.status === 'paid'"
+        (click)="setStatus('paid')">Paid</button>
+    </div>
+
+    <span class="results-count">{{ totalRecords }} invoices</span>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading invoices...</p>
   </div>
 
   <!-- TABLE -->
-  <div class="table-card">
+  <div class="table-card" *ngIf="!loading">
     <table class="inv-table">
       <thead>
         <tr>
           <th>Invoice #</th>
           <th>Client</th>
           <th>Package</th>
+          <th>Period</th>
           <th>Amount</th>
-          <th>Paid</th>
-          <th>Balance</th>
           <th>Due Date</th>
           <th>Status</th>
-          <th>Actions</th>
+          <th class="th-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let inv of filteredInvoices"
-          (click)="viewInvoice(inv.id!)"
+        <tr *ngFor="let inv of invoices"
           [class.overdue-row]="isOverdue(inv)">
-          <td class="mono">{{ inv.invoiceNo }}</td>
-          <td class="td-client">
-            <div class="c-avatar">{{ inv.clientName?.charAt(0) }}</div>
-            <div>
-              <div class="c-name">{{ inv.clientName }}</div>
-              <div class="c-code">{{ inv.clientCode }}</div>
+
+          <!-- Invoice No -->
+          <td class="mono inv-no">{{ inv.invoiceNo }}</td>
+
+          <!-- Client -->
+          <td>
+            <div class="td-client">
+              <div class="c-avatar">
+                {{ inv.fullName.slice(0,1).toUpperCase() }}
+              </div>
+              <div class="c-info">
+                <div class="c-name">{{ inv.fullName }}</div>
+                <div class="c-name">{{ inv.clientName }}</div>
+                <div class="c-code">{{ inv.clientCode }}</div>
+              </div>
             </div>
           </td>
-          <td><span class="pkg-pill">{{ inv.packageName }}</span></td>
-          <td class="mono bold">₨{{ inv.totalAmount | number }}</td>
-          <td class="mono green">₨{{ inv.amountPaid | number }}</td>
-          <td class="mono" [class.red]="(inv.balance || 0) > 0">₨{{ inv.balance | number }}</td>
+
+          <!-- Package -->
+          <td>
+            <span class="pkg-pill" *ngIf="inv.packageName">
+              {{ inv.packageName }}
+            </span>
+            <span *ngIf="!inv.packageName">—</span>
+          </td>
+
+          <!-- Period -->
+          <td class="mono period-cell">
+            {{ inv.periodStart | date:'dd MMM yy' }} –
+            {{ inv.periodEnd   | date:'dd MMM yy' }}
+          </td>
+
+          <!-- Amount -->
+          <td class="mono bold">₨{{ inv.amount | number }}</td>
+
+          <!-- Due Date -->
           <td [class.overdue-date]="isOverdue(inv)">
             {{ inv.dueDate | date:'dd MMM yy' }}
-            <span *ngIf="isOverdue(inv)" class="overdue-tag">Overdue</span>
+            <span class="overdue-tag" *ngIf="isOverdue(inv)">Overdue</span>
           </td>
+
+          <!-- Status -->
           <td>
-            <span class="status-badge" [class]="inv.status">
+            <span class="status-badge" [ngClass]="inv.status">
               {{ inv.status | titlecase }}
             </span>
           </td>
+
+          <!-- Actions -->
           <td class="td-actions" (click)="$event.stopPropagation()">
-            <button class="act-btn view" (click)="viewInvoice(inv.id!)" title="View">👁</button>
-            <button class="act-btn edit" (click)="editInvoice(inv.id!, $event)" title="Edit">✏️</button>
-            <button class="act-btn pay" *ngIf="inv.status !== 'paid'"
-              (click)="openPaymentModal(inv, $event)" title="Record Payment">💳</button>
+
+            <!-- Unpaid / Overdue: Mark Paid -->
+            <button class="act-btn-main pay"
+              *ngIf="inv.status !== 'paid'"
+              (click)="openMarkPaid(inv, $event)">
+              💳 Mark Paid
+            </button>
+
+            <!-- Paid: View Receipt -->
+            <button class="act-btn-main receipt"
+              *ngIf="inv.status === 'paid'"
+              (click)="viewReceipt(inv.receiptId!, $event)">
+              🧾 Receipt
+            </button>
+
           </td>
         </tr>
-        <tr *ngIf="filteredInvoices.length === 0">
-          <td colspan="9" class="no-data">
+
+        <!-- Empty -->
+        <tr *ngIf="invoices.length === 0">
+          <td colspan="8" class="no-data">
             <div class="no-data-inner">
               <span>🧾</span>
               <p>No invoices found</p>
-              <button class="btn-outline" (click)="clearFilters()">Clear Filters</button>
+              <button class="btn-outline" *ngIf="hasFilters"
+                (click)="clearFilters()">Clear Filters</button>
             </div>
           </td>
         </tr>
@@ -140,44 +200,86 @@
 
   <!-- PAGINATION -->
   <div class="pagination" *ngIf="totalPages > 1">
-    <button class="pg-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">‹ Prev</button>
-    <button class="pg-btn" *ngFor="let p of pages" [class.active]="page === p" (click)="goToPage(p)">{{ p }}</button>
-    <button class="pg-btn" [disabled]="page === totalPages" (click)="goToPage(page + 1)">Next ›</button>
+    <button class="pg-btn" [disabled]="filter.page === 1"
+      (click)="goToPage(filter.page - 1)">‹ Prev</button>
+    <button class="pg-btn" *ngFor="let p of pages"
+      [class.active]="filter.page === p"
+      (click)="goToPage(p)">{{ p }}</button>
+    <button class="pg-btn" [disabled]="filter.page === totalPages"
+      (click)="goToPage(filter.page + 1)">Next ›</button>
+    <span class="pg-info">Page {{ filter.page }} of {{ totalPages }}</span>
   </div>
+
 </div>
 
-<!-- PAYMENT MODAL -->
-<div class="modal-overlay" *ngIf="showPaymentModal" (click)="showPaymentModal=false">
+<!-- MARK PAID MODAL -->
+<div class="modal-overlay" *ngIf="showMarkPaidModal"
+  (click)="showMarkPaidModal = false">
   <div class="modal" (click)="$event.stopPropagation()">
+
     <div class="modal-icon">💳</div>
-    <h3>Record Payment</h3>
-    <p>Invoice <strong>{{ invoiceToPay?.invoiceNo }}</strong> — <strong>{{ invoiceToPay?.clientName }}</strong></p>
+    <h3>Mark as Paid</h3>
+    <p>
+      <span class="mono">{{ invoiceToPay?.invoiceNo }}</span> ·
+      <strong>{{ invoiceToPay?.clientName }}</strong>
+    </p>
+
+    <!-- Invoice Summary -->
     <div class="pay-summary">
-      <div class="ps-row"><span>Total Amount</span><strong>₨{{ invoiceToPay?.totalAmount | number }}</strong></div>
-      <div class="ps-row"><span>Already Paid</span><strong class="green">₨{{ invoiceToPay?.amountPaid | number }}</strong></div>
-      <div class="ps-row"><span>Balance</span><strong class="amber">₨{{ invoiceToPay?.balance | number }}</strong></div>
+      <div class="ps-row">
+        <span>Period</span>
+        <strong class="mono">
+          {{ invoiceToPay?.periodStart | date:'dd MMM' }} –
+          {{ invoiceToPay?.periodEnd   | date:'dd MMM yyyy' }}
+        </strong>
+      </div>
+      <div class="ps-row">
+        <span>Amount</span>
+        <strong class="green">₨{{ invoiceToPay?.amount | number }}</strong>
+      </div>
     </div>
+
+    <!-- Payment Method -->
     <div class="pay-form">
-      <label>Payment Amount (₨)</label>
-<input 
-  type="number"
-  [(ngModel)]="paymentAmount"
-  [max]="invoiceToPay?.balance ?? null"
-  min="1" 
-/>      <label>Payment Method</label>
-      <select [(ngModel)]="paymentMethod">
-        <option value="cash">Cash</option>
-        <option value="bank_transfer">Bank Transfer</option>
-        <option value="jazzcash">JazzCash</option>
-        <option value="easypaisa">Easypaisa</option>
-        <option value="cheque">Cheque</option>
-      </select>
+
+      <label>Payment Method</label>
+      <div class="method-options">
+        <label class="mo" *ngFor="let m of paymentMethods"
+          [class.selected]="paidMethod === m.val">
+          <input type="radio" [value]="m.val"
+            [(ngModel)]="paidMethod" style="display:none" />
+          <span class="mo-icon">{{ m.icon }}</span>
+          <span class="mo-label">{{ m.label }}</span>
+        </label>
+      </div>
+
+      <!-- Transaction ID — digital ke liye -->
+      <ng-container *ngIf="showTxnField">
+        <label>Transaction ID</label>
+        <input type="text" [(ngModel)]="paidTransactionId"
+          placeholder="e.g. JZ-1234567" />
+      </ng-container>
+
+      <!-- Paid Date -->
       <label>Payment Date</label>
-      <input type="date" [(ngModel)]="paymentDate" />
+      <input type="date" [(ngModel)]="paidDate" />
+
+      <!-- Notes -->
+      <label>Notes (Optional)</label>
+      <input type="text" [(ngModel)]="paidNotes"
+        placeholder="Koi note..." />
+
     </div>
+
     <div class="modal-actions">
-      <button class="modal-btn cancel" (click)="showPaymentModal=false">Cancel</button>
-      <button class="modal-btn primary" (click)="recordPayment()">✅ Record Payment</button>
+      <button class="modal-btn cancel"
+        (click)="showMarkPaidModal = false">Cancel</button>
+      <button class="modal-btn primary"
+        (click)="confirmMarkPaid()" [disabled]="markingPaid">
+        <span *ngIf="!markingPaid">✅ Confirm Paid</span>
+        <span *ngIf="markingPaid">Saving...</span>
+      </button>
     </div>
+
   </div>
 </div>

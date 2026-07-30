@@ -114,7 +114,7 @@
                   <div class="sb-track">
                     <div class="sb-fill ul" [style.width.%]="(form.value.uploadSpeedMbps / 200) * 100"></div>
                   </div>
-                  <span class="sb-val" style="color:#00e5a0">{{ form.value.uploadSpeedMbps }} Mbps</span>
+                  <span class="sb-val" style="color:var(--green)">{{ form.value.uploadSpeedMbps }} Mbps</span>
                 </div>
               </div>
             </div>
@@ -200,13 +200,13 @@
 
           <div class="pc-speeds">
             <div class="pcs-item">
-              <span class="pcs-arr" style="color:#00b4ff">↓</span>
+              <span class="pcs-arr" style="color:var(--primary)">↓</span>
               <span class="pcs-val" [style.color]="previewColor">{{ form.value.speedMbps }}</span>
               <span class="pcs-lbl">Mbps DL</span>
             </div>
             <div class="pcs-sep"></div>
             <div class="pcs-item">
-              <span class="pcs-arr" style="color:#00e5a0">↑</span>
+              <span class="pcs-arr" style="color:var(--green)">↑</span>
               <span class="pcs-val" [style.color]="previewColor">{{ form.value.uploadSpeedMbps }}</span>
               <span class="pcs-lbl">Mbps UL</span>
             </div>

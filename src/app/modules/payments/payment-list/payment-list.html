@@ -1,220 +1,206 @@
+<!-- payment-list.html — Billing Tracker -->
 <div class="payments-page">
 
   <!-- HEADER -->
   <div class="page-header">
     <div class="ph-left">
       <h1>Payments</h1>
-      <p>Track all client payments and transactions</p>
+      <p>Client wise monthly billing status</p>
     </div>
     <div class="ph-actions">
       <button class="btn-outline">📤 Export CSV</button>
-      <button class="btn-primary" routerLink="/payments/new">+ Record Payment</button>
     </div>
   </div>
 
-  <!-- STATS CARDS -->
+  <!-- SUMMARY CARDS -->
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon all">💳</div>
-        <div>
-          <div class="sc-val">{{ stats.total }}</div>
-          <div class="sc-label">Total Payments</div>
-        </div>
-      </div>
+    <div class="stat-card" (click)="setStatus('all')">
+      <div class="sc-icon all">📋</div>
+      <div class="sc-val">{{ summary.total }}</div>
+      <div class="sc-label">Total Records</div>
     </div>
-    <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon green">✅</div>
-        <div>
-          <div class="sc-val green">{{ stats.completed }}</div>
-          <div class="sc-label">Completed</div>
-        </div>
-      </div>
+    <div class="stat-card" (click)="setStatus('unpaid')">
+      <div class="sc-icon red">🔴</div>
+      <div class="sc-val red">{{ summary.unpaidCount }}</div>
+      <div class="sc-label">Unpaid</div>
     </div>
-    <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon amber">⏳</div>
-        <div>
-          <div class="sc-val amber">{{ stats.pending }}</div>
-          <div class="sc-label">Pending</div>
-        </div>
-      </div>
+    <div class="stat-card" (click)="setStatus('invoiced')">
+      <div class="sc-icon amber">🟡</div>
+      <div class="sc-val amber">{{ summary.invoicedCount }}</div>
+      <div class="sc-label">Invoiced</div>
     </div>
-    <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon red">❌</div>
-        <div>
-          <div class="sc-val red">{{ stats.failed }}</div>
-          <div class="sc-label">Failed</div>
-        </div>
-      </div>
+    <div class="stat-card" (click)="setStatus('paid')">
+      <div class="sc-icon green">✅</div>
+      <div class="sc-val green">{{ summary.paidCount }}</div>
+      <div class="sc-label">Paid</div>
     </div>
     <div class="stat-card highlight">
-      <div class="sc-left">
-        <div class="sc-icon teal">💰</div>
-        <div>
-          <div class="sc-val teal">₨{{ stats.totalCollected | number }}</div>
-          <div class="sc-label">Total Collected</div>
-        </div>
-      </div>
+      <div class="sc-icon teal">💰</div>
+      <div class="sc-val teal">₨{{ summary.collectedAmount | number }}</div>
+      <div class="sc-label">Collected</div>
     </div>
     <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon blue">💵</div>
-        <div>
-          <div class="sc-val blue">₨{{ stats.cashTotal | number }}</div>
-          <div class="sc-label">Cash</div>
-        </div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-left">
-        <div class="sc-icon purple">📱</div>
-        <div>
-          <div class="sc-val purple">₨{{ stats.digitalTotal | number }}</div>
-          <div class="sc-label">Digital</div>
-        </div>
-      </div>
+      <div class="sc-icon red">⚠️</div>
+      <div class="sc-val red">₨{{ summary.outstandingAmount | number }}</div>
+      <div class="sc-label">Outstanding</div>
     </div>
   </div>
 
-  <!-- METHOD BREAKDOWN -->
-  <!-- <div class="method-bar">
-    <div class="mb-title">Payment Methods</div>
-    <div class="mb-methods">
-      <div class="mb-item" *ngFor="let m of [
-        {key:'cash', label:'Cash', icon:'💵'},
-        {key:'jazzcash', label:'JazzCash', icon:'📱'},
-        {key:'easypaisa', label:'Easypaisa', icon:'📲'},
-        {key:'bank_transfer', label:'Bank Transfer', icon:'🏦'},
-        {key:'cheque', label:'Cheque', icon:'📄'},
-        {key:'online', label:'Online', icon:'💻'}
-      ]"
-        [class.active]="filterMethod === m.key"
-        (click)="filterMethod = filterMethod === m.key ? '' : m.key; page=1; applyFilters()">
-        <span class="mb-icon">{{ m.icon }}</span>
-        <span class="mb-label">{{ m.label }}</span>
-      <span class="mb-count">{{ getMethodCount(m.key) }}</span>
-
-
-      </div>
-    </div>
-  </div> -->
-<!-- METHOD BREAKDOWN -->
-<div class="method-bar">
-  <div class="mb-title">Payment Methods</div>
-  <div class="mb-methods">
-    <div class="mb-item"
-      *ngFor="let m of methodList"
-      [class.active]="filterMethod === m.key"
-      (click)="filterMethod = filterMethod === m.key ? '' : m.key; page=1; applyFilters()">
-      <span class="mb-icon">{{ m.icon }}</span>
-      <span class="mb-label">{{ m.label }}</span>
-      <span class="mb-count">{{ getMethodCount(m.key) }}</span>
-    </div>
-  </div>
-</div>
-  <!-- FILTERS BAR -->
+  <!-- FILTERS -->
   <div class="filters-bar">
+
+    <!-- Search -->
     <div class="fb-search">
       <span class="si">🔍</span>
-      <input type="text" [(ngModel)]="searchText" (input)="onSearchChange()"
-        placeholder="Search by name, payment no, transaction ID..." />
-      <button *ngIf="searchText" (click)="searchText=''; applyFilters()">✕</button>
+      <input type="text" [(ngModel)]="filter.search"
+        (input)="onSearchChange()"
+        placeholder="Search client name, billing no..." />
+      <button *ngIf="filter.search"
+        (click)="filter.search=''; onFilterChange()">✕</button>
     </div>
+
     <div class="fb-selects">
-      <select [(ngModel)]="filterStatus" (change)="page=1; applyFilters()">
-        <option value="">All Status</option>
-        <option value="completed">Completed</option>
-        <option value="pending">Pending</option>
-        <option value="failed">Failed</option>
-        <option value="refunded">Refunded</option>
+
+      <!-- Month -->
+      <select [(ngModel)]="filter.month" (change)="onFilterChange()">
+        <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
       </select>
-      <select [(ngModel)]="filterMethod" (change)="page=1; applyFilters()">
-        <option value="">All Methods</option>
-        <option value="cash">Cash</option>
-        <option value="jazzcash">JazzCash</option>
-        <option value="easypaisa">Easypaisa</option>
-        <option value="bank_transfer">Bank Transfer</option>
-        <option value="cheque">Cheque</option>
-        <option value="online">Online</option>
+
+      <!-- Year -->
+      <select [(ngModel)]="filter.year" (change)="onFilterChange()">
+        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
       </select>
-      <input type="month" [(ngModel)]="filterMonth" (change)="page=1; applyFilters()" />
-      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">✕ Clear</button>
+
+      <!-- Clear -->
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">
+        ✕ Clear
+      </button>
     </div>
-    <span class="res-count">{{ filteredPayments.length }} records</span>
+
+    <!-- Status tabs -->
+    <div class="status-tabs">
+      <button [class.active]="filter.status === 'all'"
+        (click)="setStatus('all')">All</button>
+      <button [class.active]="filter.status === 'unpaid'"
+        (click)="setStatus('unpaid')">Unpaid</button>
+      <button [class.active]="filter.status === 'invoiced'"
+        (click)="setStatus('invoiced')">Invoiced</button>
+      <button [class.active]="filter.status === 'paid'"
+        (click)="setStatus('paid')">Paid</button>
+    </div>
+
+    <span class="res-count">{{ totalRecords }} records</span>
   </div>
 
-  <!-- BULK BAR -->
-  <div class="bulk-bar" *ngIf="selectedPayments.size > 0">
-    <span>{{ selectedPayments.size }} selected</span>
-    <button class="bulk-btn blue">📤 Export Selected</button>
-    <button class="bulk-btn red">🗑 Delete Selected</button>
-    <button class="bulk-btn-cancel" (click)="selectedPayments.clear()">✕ Clear</button>
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading billing records...</p>
   </div>
 
   <!-- TABLE -->
-  <div class="table-card">
+  <div class="table-card" *ngIf="!loading">
     <table class="pay-table">
       <thead>
         <tr>
-          <th class="th-check">
-            <input type="checkbox" [checked]="allSelected" (change)="toggleAll($event)" />
-          </th>
-          <th>Payment #</th>
+          <th>Billing #</th>
           <th>Client</th>
-          <th>Invoice</th>
+          <th>Package</th>
+          <th>Period</th>
+          <th>Due Date</th>
           <th>Amount</th>
-          <th>Method</th>
-          <th>Transaction ID</th>
-          <th>Date</th>
           <th>Status</th>
-          <th class="th-act">Actions</th>
+          <th class="th-act">Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let pay of filteredPayments"
-          [class.selected]="selectedPayments.has(pay.id!)"
-          (click)="viewPayment(pay.id!)">
-          <td class="td-check" (click)="$event.stopPropagation()">
-            <input type="checkbox" [checked]="selectedPayments.has(pay.id!)" (change)="toggleSelect(pay.id!)" />
-          </td>
-          <td class="mono pay-no">{{ pay.paymentNo }}</td>
+        <tr *ngFor="let b of billings"
+    
+          [class.overdue]="isOverdue(b)">
+
+          <!-- Billing No -->
+          <td class="mono billing-no">{{ b.billingNo }}</td>
+
+          <!-- Client -->
           <td class="td-client">
-            <div class="c-av">{{ pay.clientName?.charAt(0) }}</div>
+           <div class="c-av">{{ b.fullName.charAt(0).toUpperCase() }}</div>
+
+            <!-- <div class="c-av">{{ b.clientName.charAt(0).toUpperCase() }}</div> -->
             <div>
-              <div class="c-nm">{{ pay.clientName }}</div>
-              <div class="c-cd">{{ pay.clientCode }}</div>
+                   <div class="c-nm">{{ b.fullName }}</div>
+              <div class="c-nm">{{ b.clientName }}</div>
+              <div class="c-cd">{{ b.clientCode }}</div>
             </div>
           </td>
-          <td class="mono inv-link" (click)="$event.stopPropagation()" [routerLink]="['/invoices', pay.invoiceId]">
-            {{ pay.invoiceNo }}
-          </td>
-          <td class="mono amount-cell">₨{{ pay.amount | number }}</td>
+
+          <!-- Package -->
           <td>
-            <span class="method-pill" [class]="pay.method">
-              {{ getMethodIcon(pay.method) }} {{ getMethodLabel(pay.method) }}
+            <span class="pkg-badge">{{ b.packageName }}</span>
+          </td>
+
+          <!-- Period -->
+          <td class="mono period-cell">
+            {{ b.periodStart | date:'dd MMM yy' }} –
+            {{ b.periodEnd   | date:'dd MMM yy' }}
+          </td>
+
+          <!-- Due Date -->
+          <td>
+            <span [class.overdue-date]="isOverdue(b)">
+              {{ b.dueDate | date:'dd MMM yy' }}
+            </span>
+            <span class="overdue-tag" *ngIf="isOverdue(b)">Overdue</span>
+          </td>
+
+          <!-- Amount -->
+          <td class="mono amount-cell">₨{{ b.amountDue | number }}</td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-badge" [ngClass]="b.status">
+              {{ b.status | titlecase }}
             </span>
           </td>
-          <td class="mono txn-id">{{ pay.transactionId || '—' }}</td>
-          <td class="date-cell">{{ pay.paymentDate | date:'dd MMM yy' }}</td>
-          <td>
-            <span class="status-badge" [class]="pay.status">{{ pay.status | titlecase }}</span>
-          </td>
+
+          <!-- Action -->
           <td class="td-act" (click)="$event.stopPropagation()">
-            <button class="act-btn view" (click)="viewPayment(pay.id!)" title="View">👁</button>
-            <button class="act-btn edit" (click)="editPayment(pay.id!, $event)" title="Edit">✏️</button>
-            <button class="act-btn receipt" (click)="openReceipt(pay, $event)" title="Receipt">🧾</button>
-            <button class="act-btn del" (click)="confirmDelete(pay, $event)" title="Delete">🗑</button>
+
+            <!-- Unpaid: Create Invoice -->
+            <button class="act-btn-main invoice"
+              *ngIf="b.status === 'unpaid'"
+              (click)="openInvoiceModal(b, $event)">
+              📄 Create Invoice
+            </button>
+
+            <!-- Invoiced: View Invoice -->
+            <button class="act-btn-main invoiced"
+              *ngIf="b.status === 'invoiced'"
+              (click)="viewInvoice(b.invoiceId!, $event)">
+              🧾 {{ b.invoiceNo }}
+            </button>
+
+            <!-- Paid: View Receipt -->
+            <button class="act-btn-main receipt"
+              *ngIf="b.status === 'paid'"
+              (click)="viewReceipt(b.receiptId!, $event)">
+              ✅ View Receipt
+            </button>
+
+            <!-- Delete -->
+            <button class="act-btn del"
+              (click)="confirmDelete(b, $event)" title="Delete">🗑</button>
           </td>
+
         </tr>
-        <tr *ngIf="filteredPayments.length === 0">
-          <td colspan="10" class="no-data">
+
+        <!-- Empty -->
+        <tr *ngIf="billings.length === 0">
+          <td colspan="8" class="no-data">
             <div class="ndi">
-              <span>💳</span>
-              <p>No payments found</p>
-              <button class="btn-outline" (click)="clearFilters()">Clear Filters</button>
+              <span>📋</span>
+              <p>No billing records found</p>
+              <button class="btn-outline" *ngIf="hasFilters"
+                (click)="clearFilters()">Clear Filters</button>
             </div>
           </td>
         </tr>
@@ -224,61 +210,58 @@
 
   <!-- PAGINATION -->
   <div class="pagination" *ngIf="totalPages > 1">
-    <button class="pg-btn" [disabled]="page===1" (click)="goToPage(page-1)">‹ Prev</button>
-    <button class="pg-btn" *ngFor="let p of pages" [class.active]="page===p" (click)="goToPage(p)">{{ p }}</button>
-    <button class="pg-btn" [disabled]="page===totalPages" (click)="goToPage(page+1)">Next ›</button>
-    <span class="pg-info">Page {{ page }} of {{ totalPages }}</span>
+    <button class="pg-btn" [disabled]="filter.page === 1"
+      (click)="goToPage(filter.page - 1)">‹ Prev</button>
+    <button class="pg-btn" *ngFor="let p of pages"
+      [class.active]="filter.page === p"
+      (click)="goToPage(p)">{{ p }}</button>
+    <button class="pg-btn" [disabled]="filter.page === totalPages"
+      (click)="goToPage(filter.page + 1)">Next ›</button>
+    <span class="pg-info">Page {{ filter.page }} of {{ totalPages }}</span>
+  </div>
+
+</div>
+
+<!-- CREATE INVOICE MODAL -->
+<div class="modal-overlay" *ngIf="showInvoiceModal"
+  (click)="showInvoiceModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon">📄</div>
+    <h3>Create Invoice?</h3>
+    <p>
+      <strong>{{ billingToInvoice?.clientName }}</strong> ka<br>
+      <strong>{{ billingToInvoice?.periodStart | date:'dd MMM' }} –
+              {{ billingToInvoice?.periodEnd   | date:'dd MMM yyyy' }}</strong>
+      ka invoice banayein?<br>
+      Amount: <strong>₨{{ billingToInvoice?.amountDue | number }}</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel"
+        (click)="showInvoiceModal = false">Cancel</button>
+      <button class="modal-btn confirm"
+        (click)="confirmCreateInvoice()" [disabled]="creatingInvoice">
+        <span *ngIf="!creatingInvoice">✅ Yes, Create</span>
+        <span *ngIf="creatingInvoice">Creating...</span>
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- DELETE MODAL -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+<div class="modal-overlay" *ngIf="showDeleteModal"
+  (click)="showDeleteModal = false">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-icon">🗑️</div>
-    <h3>Delete Payment?</h3>
-    <p>Are you sure you want to delete payment <strong>{{ paymentToDelete?.paymentNo }}</strong>?<br>This cannot be undone.</p>
+    <h3>Delete Billing Record?</h3>
+    <p>
+      <strong>{{ billingToDelete?.billingNo }}</strong> delete karna chahte hain?<br>
+      Yeh action undo nahi ho sakti.
+    </p>
     <div class="modal-actions">
-      <button class="modal-btn cancel" (click)="showDeleteModal=false">Cancel</button>
-      <button class="modal-btn danger" (click)="deleteConfirmed()">Yes, Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- RECEIPT MODAL -->
-<div class="modal-overlay receipt-overlay" *ngIf="showReceiptModal" (click)="showReceiptModal=false">
-  <div class="receipt-modal" (click)="$event.stopPropagation()">
-    <div class="rm-header no-print">
-      <h3>Payment Receipt</h3>
-      <div class="rm-header-btns">
-        <button class="btn-outline" (click)="printReceipt()">🖨️ Print</button>
-        <button class="rm-close" (click)="showReceiptModal=false">✕</button>
-      </div>
-    </div>
-    <div class="receipt-paper">
-      <div class="rp-company">
-        <div class="rp-logo">NetPro ISP</div>
-        <div class="rp-tagline">Management System — Official Receipt</div>
-      </div>
-      <div class="rp-divider"></div>
-      <div class="rp-row"><span>Receipt #</span><strong class="mono">{{ receiptPayment?.paymentNo }}</strong></div>
-      <div class="rp-row"><span>Invoice #</span><strong class="mono">{{ receiptPayment?.invoiceNo }}</strong></div>
-      <div class="rp-divider"></div>
-      <div class="rp-row"><span>Client</span><strong>{{ receiptPayment?.clientName }}</strong></div>
-      <div class="rp-row"><span>Client Code</span><strong class="mono">{{ receiptPayment?.clientCode }}</strong></div>
-      <div class="rp-row"><span>Phone</span><strong>{{ receiptPayment?.clientPhone }}</strong></div>
-      <div class="rp-row"><span>Package</span><strong>{{ receiptPayment?.packageName }}</strong></div>
-      <div class="rp-divider"></div>
-      <div class="rp-amount-big">₨{{ receiptPayment?.amount | number }}</div>
-      <div class="rp-amount-label">Amount Paid</div>
-      <div class="rp-divider"></div>
-      <div class="rp-row"><span>Payment Method</span><strong>{{ getMethodLabel(receiptPayment?.method || '') }}</strong></div>
-      <div class="rp-row" *ngIf="receiptPayment?.transactionId"><span>Transaction ID</span><strong class="mono">{{ receiptPayment?.transactionId }}</strong></div>
-      <div class="rp-row"><span>Payment Date</span><strong>{{ receiptPayment?.paymentDate | date:'dd MMM yyyy' }}</strong></div>
-      <div class="rp-row"><span>Received By</span><strong>{{ receiptPayment?.receivedBy }}</strong></div>
-      <div class="rp-row"><span>Status</span>
-        <span class="status-badge" [class]="receiptPayment?.status">{{ receiptPayment?.status | titlecase }}</span>
-      </div>
-      <div class="rp-footer">Thank you for your payment! — NetPro ISP</div>
+      <button class="modal-btn cancel"
+        (click)="showDeleteModal = false">Cancel</button>
+      <button class="modal-btn danger"
+        (click)="deleteConfirmed()">Yes, Delete</button>
     </div>
   </div>
 </div>

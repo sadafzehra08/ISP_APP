@@ -32,13 +32,12 @@
       <span class="sb-badge red" *ngIf="item.badge && !collapsed">{{ item.badge }}</span>
     </div>
 
-    <div class="sb-section" *ngIf="!collapsed">Analytics</div>
-    <div class="sb-item" *ngFor="let item of analyticsNav"
+h8    <!-- <div class="sb-item" *ngFor="let item of analyticsNav"
       [class.active]="isActive(item.route!)"
       (click)="navigate(item.route!)">
       <span class="sb-icon">{{ item.icon }}</span>
       <span class="sb-label" *ngIf="!collapsed">{{ item.label }}</span>
-    </div>
+    </div> -->
 
     <div class="sb-section" *ngIf="!collapsed">System</div>
     <div class="sb-item" *ngFor="let item of systemNav"
@@ -55,8 +54,8 @@
   <div class="sb-user">
     <div class="sb-avatar">{{ userInitials }}</div>
     <div class="sb-user-info" *ngIf="!collapsed">
-      <div class="u-name">{{ auth.currentUser?.name }}</div>
-      <div class="u-role">{{ auth.currentUser?.role | titlecase }}</div>
+      <div class="u-name">   {{ currentUser?.fullName?.charAt(0) || '?' }}</div>
+      <div class="u-role">{{ currentUser?.role | titlecase }}</div>
     </div>
     <div class="sb-logout" *ngIf="!collapsed" (click)="logout()" title="Logout">↩</div>
   </div>

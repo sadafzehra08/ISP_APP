@@ -6,6 +6,7 @@ import { ClientListComponent } from './client-list/client-list';
 
 import { ClientForm } from './client-form/client-form';
 import { ClientDetail } from './client-detail/client-detail';
+import { SharedModule } from '../../shared/shared.module';
 
 
 @NgModule({
@@ -16,6 +17,6 @@ import { ClientDetail } from './client-detail/client-detail';
     ClientForm,
     ClientDetail,
   ],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ClientsRoutingModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ClientsRoutingModule, SharedModule],
 })
 export class ClientsModule {}

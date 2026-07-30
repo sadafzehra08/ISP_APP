@@ -1,71 +1,84 @@
 <div class="login-page">
+
   <div class="login-left">
-    <div class="left-content">
-      <div class="isp-logo">
-        <span class="logo-icon">📡</span>
-        <span class="logo-text">NetPro ISP</span>
+    <div class="ll-content">
+      <div class="ll-logo">
+        <div class="ll-logo-icon">🌐</div>
+        <div class="ll-logo-text">NetPro ISP</div>
       </div>
-      <h1>Manage Your ISP<br><span class="accent">Business Smarter</span></h1>
-      <p>Complete billing, client & network management in one platform</p>
-      <div class="stats-row">
-        <div class="stat"><div class="stat-num">1200+</div><div class="stat-label">Clients</div></div>
-        <div class="stat"><div class="stat-num">99.9%</div><div class="stat-label">Uptime</div></div>
-        <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Support</div></div>
-      </div>
-      <div class="feature-pills">
-        <span class="pill">✅ Client Management</span>
-        <span class="pill">✅ Auto Billing</span>
-        <span class="pill">✅ Invoice PDF</span>
-        <span class="pill">✅ Payment Tracking</span>
-        <span class="pill">✅ Reports & Analytics</span>
-        <span class="pill">✅ Multi-User Roles</span>
+      <h1 class="ll-title">Network Management<br>Made Simple</h1>
+      <p class="ll-sub">Manage clients, billing, invoices and your entire ISP network from one powerful dashboard.</p>
+      <div class="ll-features">
+        <div class="ll-feat"><span class="lf-icon">✅</span> Real-time client monitoring</div>
+        <div class="ll-feat"><span class="lf-icon">✅</span> Automated billing & invoicing</div>
+        <div class="ll-feat"><span class="lf-icon">✅</span> Multi-company support</div>
+        <div class="ll-feat"><span class="lf-icon">✅</span> Role-based access control</div>
       </div>
     </div>
   </div>
 
   <div class="login-right">
     <div class="login-box">
-      <div class="login-header">
-        <div class="login-icon">🔐</div>
+
+      <div class="lb-header">
+        <div class="lb-icon">🔐</div>
         <h2>Welcome Back</h2>
-        <p>Sign in to ISP Management System</p>
+        <p>Sign in to your ISP dashboard</p>
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="field">
-          <label>Email Address</label>
-          <div class="input-box" [class.focused]="f['email'].touched">
-            <span class="i-icon">✉️</span>
-            <input type="email" formControlName="email" placeholder="admin@netpro.com"
-              [class.err]="f['email'].touched && f['email'].invalid" />
+      <!-- ERROR ALERT -->
+      <div class="lb-error" *ngIf="error">
+        <span>⚠️</span> {{ error }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="login()">
+
+        <div class="lb-field">
+          <label>Username</label>
+          <div class="lf-input-wrap">
+            <span class="lf-prefix">👤</span>
+            <input type="text" formControlName="username"
+              placeholder="Enter your username"
+              [class.err]="f['username'].touched && f['username'].invalid"
+              autocomplete="username" />
           </div>
-          <div class="err-text" *ngIf="f['email'].touched && f['email'].invalid">
-            Valid email is required
+          <div class="lf-error" *ngIf="f['username'].touched && f['username'].invalid">
+            Username required
           </div>
         </div>
 
-        <div class="field">
+        <div class="lb-field">
           <label>Password</label>
-          <div class="input-box">
-            <span class="i-icon">🔒</span>
-            <input [type]="showPass ? 'text' : 'password'" formControlName="password"
-              placeholder="••••••••" [class.err]="f['password'].touched && f['password'].invalid" />
-            <span class="eye" (click)="showPass = !showPass">{{ showPass ? '🙈' : '👁️' }}</span>
+          <div class="lf-input-wrap">
+            <span class="lf-prefix">🔒</span>
+            <input [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              [class.err]="f['password'].touched && f['password'].invalid"
+              autocomplete="current-password" />
+            <button type="button" class="lf-eye" (click)="showPassword = !showPassword">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
           </div>
-          <div class="err-text" *ngIf="f['password'].touched && f['password'].invalid">
-            Minimum 4 characters required
+          <div class="lf-error" *ngIf="f['password'].touched && f['password'].invalid">
+            Password required (min 6 characters)
           </div>
         </div>
 
-        <div class="alert-err" *ngIf="error">⚠️ {{ error }}</div>
-
-        <button class="btn-signin" [disabled]="loading">
-          <span *ngIf="!loading">Sign In →</span>
-          <span *ngIf="loading" class="spinner">Signing in...</span>
+        <button type="submit" class="lb-submit" [disabled]="loading">
+          <span *ngIf="!loading">🚀 Sign In</span>
+          <span *ngIf="loading" class="lb-loading">
+            <span class="spinner"></span> Signing in...
+          </span>
         </button>
+
       </form>
 
-      <div class="login-footer">© 2025 NetPro ISP Management System</div>
+      <div class="lb-footer">
+        <span>© 2026 NetPro ISP Management System</span>
+      </div>
+
     </div>
   </div>
+
 </div>

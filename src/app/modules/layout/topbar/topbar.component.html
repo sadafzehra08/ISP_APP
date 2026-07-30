@@ -14,12 +14,66 @@
 
   <div class="tb-date">📅 {{ currentDate }}</div>
 
-  <div class="tb-notif" [attr.data-count]="notifCount">
-    🔔
-    <span class="notif-dot" *ngIf="notifCount > 0"></span>
-  </div>
+  <!-- NOTIFICATIONS -->
+<!-- NOTIFICATIONS -->
+<div class="tb-notif" (click)="toggleNotifMenu()">
+  🔔
+  <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount > 9 ? '9+' : notifCount }}</span>
 
-  <div class="tb-user">
-    <div class="tb-avatar">{{ auth.currentUser?.name?.charAt(0) }}</div>
+  <!-- DROPDOWN -->
+  <div class="notif-dropdown" *ngIf="showNotifMenu" (click)="$event.stopPropagation()">
+    <div class="nd-header">
+      <span>Due / Overdue Payments</span>
+      <span class="nd-count" *ngIf="notifCount > 0">{{ notifCount }}</span>
+    </div>
+
+    <div class="nd-empty" *ngIf="notifications.length === 0">
+      🎉 Koi due payment nahi
+    </div>
+
+    <div class="nd-list" *ngIf="notifications.length > 0">
+      <div class="nd-item" *ngFor="let n of notifications">
+        <div class="nd-item-top">
+          <span class="nd-client">{{ n.clientName }}</span>
+          <span class="nd-amount">₨{{ n.amountDue | number }}</span>
+        </div>
+        <div class="nd-item-bottom">
+          <span>{{ n.packageName }}</span>
+          <span class="nd-overdue" [class.late]="n.daysOverdue > 0">
+            {{ n.daysOverdue > 0 ? n.daysOverdue + ' days overdue' : 'Aaj due' }}
+          </span>
+        </div>
+        <button class="nd-invoice-btn"
+          (click)="createInvoiceFromNotif(n, $event)"
+          [disabled]="creatingInvoiceFor === n.billingId">
+          <span *ngIf="creatingInvoiceFor !== n.billingId">📄 Create Invoice</span>
+          <span *ngIf="creatingInvoiceFor === n.billingId">Creating...</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
+  <!-- USER MENU -->
+  <div class="tb-user" (click)="toggleUserMenu()">
+    <div class="tb-avatar">
+      {{ currentUser?.fullName?.charAt(0) || '?' }}
+    </div>
+
+    <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
+      <div class="ud-header">
+        <div class="ud-avatar">{{ currentUser?.fullName?.charAt(0) || '?' }}</div>
+        <div class="ud-info">
+          <div class="ud-name">{{ currentUser?.fullName || 'User' }}</div>
+          <div class="ud-email">{{ currentUser?.email || '' }}</div>
+        </div>
+      </div>
+      <div class="ud-divider"></div>
+      <button class="ud-logout" (click)="onLogout()">
+        <span class="ud-logout-icon">⏻</span> Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="user-menu-backdrop" *ngIf="showUserMenu" (click)="closeUserMenu()"></div>
+<div class="user-menu-backdrop" *ngIf="showNotifMenu" (click)="closeNotifMenu()"></div>

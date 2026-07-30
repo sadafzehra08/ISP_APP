@@ -1,0 +1,182 @@
+<div class="form-page">
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading user...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <div class="form-header">
+      <button class="back-btn" (click)="cancel()">← Back</button>
+      <div>
+        <h1>{{ isEdit ? 'Edit User' : 'Add New User' }}</h1>
+        <p>{{ isEdit ? 'Update user details and permissions' : 'Create a new system user' }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-layout">
+
+        <div class="form-main">
+          <div class="form-card">
+            <div class="card-title">User Information</div>
+            <div class="form-grid">
+
+              <div class="field full">
+                <label>Full Name <span class="req">*</span></label>
+                <input type="text" formControlName="fullName"
+                  placeholder="e.g. Ahmed Raza"
+                  [class.err]="f['fullName'].touched && f['fullName'].invalid" />
+                <div class="err-msg" *ngIf="f['fullName'].touched && f['fullName'].invalid">
+                  Full name required (min 3 chars)
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Username <span class="req" *ngIf="!isEdit">*</span></label>
+                <input type="text" formControlName="username"
+                  placeholder="e.g. ahmed.raza"
+                  [class.err]="f['username'].touched && f['username'].invalid"
+                  [readonly]="isEdit" />
+                <div class="err-msg" *ngIf="f['username'].touched && f['username'].invalid">
+                  Username required (min 4 chars)
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Role <span class="req">*</span></label>
+                <select formControlName="role">
+                  <option value="superadmin">Super Admin</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Email</label>
+                <input type="email" formControlName="email"
+                  placeholder="user@email.com"
+                  [class.err]="f['email'].touched && f['email'].invalid" />
+                <div class="err-msg" *ngIf="f['email'].touched && f['email'].invalid">
+                  Valid email required
+                </div>
+              </div>
+
+            
+
+              <!-- Password — only on create -->
+              <div class="field full" *ngIf="!isEdit">
+                <label>Password <span class="req">*</span></label>
+                <div class="pass-wrap">
+                  <input [type]="showPass ? 'text' : 'password'"
+                    formControlName="password"
+                    placeholder="Min 6 characters"
+                    [class.err]="f['password'].touched && f['password'].invalid" />
+                  <button type="button" class="pass-toggle"
+                    (click)="showPass = !showPass">
+                    {{ showPass ? '🙈' : '👁' }}
+                  </button>
+                </div>
+                <div class="err-msg" *ngIf="f['password'].touched && f['password'].invalid">
+                  Password required (min 6 chars)
+                </div>
+              </div>
+
+              <!-- Status — only on edit -->
+              <div class="field" *ngIf="isEdit">
+                <label>Status</label>
+                <select formControlName="isActive">
+                  <option [ngValue]="true">Active</option>
+                  <option [ngValue]="false">Inactive</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CHANGE PASSWORD — edit mode only -->
+          <div class="form-card" *ngIf="isEdit">
+            <div class="card-title-row">
+              <div class="card-title">Change Password</div>
+              <button type="button" class="btn-outline-sm"
+                (click)="showPasswordSection = !showPasswordSection">
+                {{ showPasswordSection ? 'Cancel' : '🔑 Change Password' }}
+              </button>
+            </div>
+
+            <div *ngIf="showPasswordSection" [formGroup]="passwordForm" class="form-grid mt-1">
+              <div class="field">
+                <label>New Password</label>
+                <input type="password" formControlName="newPassword"
+                  placeholder="Min 6 characters"
+                  [class.err]="pf['newPassword'].touched && pf['newPassword'].invalid" />
+              </div>
+              <div class="field">
+                <label>Confirm Password</label>
+                <input type="password" formControlName="confirmPassword"
+                  placeholder="Re-enter password"
+                  [class.err]="pf['confirmPassword'].touched && pf['confirmPassword'].invalid" />
+              </div>
+              <div class="field full">
+                <button type="button" class="btn-save"
+                  (click)="savePassword()" [disabled]="savingPassword">
+                  {{ savingPassword ? 'Saving...' : '✅ Update Password' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="form-sidebar">
+          <div class="summary-card">
+            <div class="card-title">Preview</div>
+            <div class="user-preview">
+              <div class="prev-avatar">
+                {{ form.value.fullName?.slice(0,1)?.toUpperCase() || '?' }}
+              </div>
+              <div class="prev-name">{{ form.value.fullName || 'New User' }}</div>
+              <div class="prev-username mono">@{{ form.value.username || '—' }}</div>
+              <div class="prev-role">
+                <span class="role-badge" [ngClass]="getRoleBadge(form.value.role)">
+                  {{ form.value.role | titlecase }}
+                </span>
+              </div>
+              <div class="prev-rows">
+                <div class="prev-row">
+                  <span>Email</span>
+                  <strong>{{ form.value.email || '—' }}</strong>
+                </div>
+               
+                <div class="prev-row" *ngIf="isEdit">
+                  <span>Status</span>
+                  <span class="status-badge"
+                    [ngClass]="form.value.isActive ? 'active' : 'suspended'">
+                    {{ form.value.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-btns">
+            <button type="submit" class="btn-save" [disabled]="saving">
+              <span *ngIf="!saving">
+                👤 {{ isEdit ? 'Update User' : 'Create User' }}
+              </span>
+              <span *ngIf="saving">Saving...</span>
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancel()">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  </ng-container>
+</div>

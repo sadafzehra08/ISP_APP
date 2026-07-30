@@ -1,33 +1,44 @@
-
-
-import { Component, OnInit } from '@angular/core';
+// ── package-form.ts ── Real API ───────────────────────────────────────────
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Package } from '../../../models/package.model';
+import { PackageService } from '../../../core/services/package.service';
 
 @Component({
-  selector: 'app-package-form',
-  standalone: false,
+  selector:    'app-package-form',
+  standalone:  false,
   templateUrl: './package-form.html',
-  styleUrl: './package-form.scss',
+  styleUrl:    './package-form.scss',
 })
 export class PackageForm implements OnInit {
-  form!: FormGroup;
-  isEdit = false;
-  saving = false;
-  newFeature = '';
+  form!:      FormGroup;
+  isEdit      = false;
+  packageId:  number | null = null;
+  saving      = false;
+  loading     = false;
+  newFeature  = '';
 
   tierOptions = [
-    { value: 'basic',    label: 'Basic',   icon: '🌐' },
+    { value: 'basic',    label: 'Basic',    icon: '🌐' },
     { value: 'advanced', label: 'Advanced', icon: '⚡' },
     { value: 'silver',   label: 'Silver',   icon: '🥈' },
     { value: 'premium',  label: 'Premium',  icon: '👑' },
   ];
 
-  constructor(private fb: FormBuilder, private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private fb:             FormBuilder,
+    private route:          ActivatedRoute,
+    private router:         Router,
+    private packageService: PackageService,
+    private cdr:            ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.isEdit = !!this.route.snapshot.params['id'];
+    this.packageId = this.route.snapshot.params['id']
+      ? +this.route.snapshot.params['id'] : null;
+    this.isEdit = !!this.packageId;
+
     this.buildForm();
     if (this.isEdit) this.loadPackage();
   }
@@ -52,9 +63,37 @@ export class PackageForm implements OnInit {
   }
 
   loadPackage() {
-    const defaultFeatures = ['Unlimited Data', '10 Mbps Download', 'Basic Support'];
-    defaultFeatures.forEach(f => this.featuresArray.push(this.fb.control(f)));
-    this.form.patchValue({ name: 'Basic', tier: 'basic', speedMbps: 10, uploadSpeedMbps: 5, burstSpeed: 15, priceMonthly: 1200, priceQuarterly: 3300, priceYearly: 12000, validityDays: 30, maxDevices: 2, description: 'Perfect for basic use.', isActive: true });
+    this.loading = true;
+    this.packageService.getById(this.packageId!).subscribe({
+      next: (pkg: Package) => {
+        this.form.patchValue({
+          name:            pkg.name,
+          tier:            pkg.tier,
+          speedMbps:       pkg.speedMbps,
+          uploadSpeedMbps: pkg.uploadSpeedMbps,
+          burstSpeed:      pkg.burstSpeed,
+          priceMonthly:    pkg.priceMonthly,
+          priceQuarterly:  pkg.priceQuarterly,
+          priceYearly:     pkg.priceYearly,
+          dataLimitGb:     pkg.dataLimitGb ?? null,
+          validityDays:    pkg.validityDays,
+          maxDevices:      pkg.maxDevices,
+          description:     pkg.description,
+          isActive:        pkg.isActive,
+        });
+
+        // Features array fill karo
+        this.featuresArray.clear();
+        (pkg.features || []).forEach(f => this.featuresArray.push(this.fb.control(f)));
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.router.navigate(['/packages']);
+      }
+    });
   }
 
   get f() { return this.form.controls; }
@@ -72,8 +111,8 @@ export class PackageForm implements OnInit {
   }
 
   get previewColor(): string {
-    const colors: any = { basic: '#00b4ff', advanced: '#00e5a0', silver: '#c0c0c0', premium: '#ffd700' };
-    return colors[this.form.value.tier] || '#00b4ff';
+    const colors: any = { basic: 'var(--primary)', advanced: 'var(--green)', silver: '#c0c0c0', premium: '#ffd700' };
+    return colors[this.form.value.tier] || 'var(--primary)';
   }
 
   get savingPercent(): number {
@@ -86,7 +125,36 @@ export class PackageForm implements OnInit {
   save() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving = true;
-    setTimeout(() => { this.saving = false; this.router.navigate(['/packages']); }, 800);
+
+    const val = this.form.value;
+    const dto: Partial<Package> = {
+      name:            val.name,
+      tier:            val.tier,
+      speedMbps:       val.speedMbps,
+      uploadSpeedMbps: val.uploadSpeedMbps,
+      burstSpeed:      val.burstSpeed,
+      priceMonthly:    val.priceMonthly,
+      priceQuarterly:  val.priceQuarterly,
+      priceYearly:     val.priceYearly,
+      dataLimitGb:     val.dataLimitGb || undefined,
+      validityDays:    val.validityDays,
+      maxDevices:      val.maxDevices,
+      description:     val.description,
+      isActive:        val.isActive,
+      features:        this.featuresArray.value,
+    };
+
+    const req$ = this.isEdit
+      ? this.packageService.update(this.packageId!, dto)
+      : this.packageService.create(dto);
+
+    req$.subscribe({
+      next: () => { this.saving = false; this.router.navigate(['/packages']); },
+      error: (e) => {
+        console.error('Save error:', e);
+        this.saving = false;
+      }
+    });
   }
 
   cancel() { this.router.navigate(['/packages']); }

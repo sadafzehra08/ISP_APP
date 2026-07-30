@@ -1,0 +1,363 @@
+// ══════════════════════════════════════════════════════
+// user-form.scss
+// ══════════════════════════════════════════════════════
+
+$primary:    #4f6ef7;
+$danger:     #ef4444;
+$success:    #22c55e;
+$warning:    #f59e0b;
+$text:       #1e293b;
+$text-muted: #64748b;
+$border:     #e2e8f0;
+$bg:         #f8fafc;
+$card:       #ffffff;
+$radius:     12px;
+
+// ── Page wrapper ──────────────────────────────────────
+.form-page {
+  padding: 28px 32px;
+  background: $bg;
+  min-height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  max-width: 1100px;
+}
+
+// ── Loading ───────────────────────────────────────────
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 0;
+  color: $text-muted;
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 12px;
+  }
+  p { margin: 0; font-size: 0.875rem; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Form Header ───────────────────────────────────────
+.form-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text;
+  }
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $text-muted;
+  }
+}
+
+.back-btn {
+  padding: 9px 16px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: $card;
+  color: $text-muted;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 3px;
+
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+// ── Layout ────────────────────────────────────────────
+.form-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-main { display: flex; flex-direction: column; gap: 20px; }
+
+// ── Cards ─────────────────────────────────────────────
+.form-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 24px;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $text;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border;
+
+  .card-title { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+}
+
+// ── Form Grid ─────────────────────────────────────────
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mt-1 { margin-top: 4px; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .req { color: $danger; margin-left: 2px; }
+
+  input, select {
+    padding: 10px 12px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: $text;
+    background: $bg;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::placeholder { color: #94a3b8; }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+
+    &.err {
+      border-color: $danger;
+      &:focus { box-shadow: 0 0 0 3px rgba($danger, 0.1); }
+    }
+
+    &[readonly] {
+      background: #f1f5f9;
+      color: $text-muted;
+      cursor: not-allowed;
+    }
+  }
+
+  select { cursor: pointer; }
+}
+
+.err-msg {
+  font-size: 0.775rem;
+  color: $danger;
+  margin-top: -2px;
+}
+
+// ── Password field ────────────────────────────────────
+.pass-wrap {
+  position: relative;
+
+  input { padding-right: 42px; }
+
+  .pass-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px;
+    line-height: 1;
+    color: $text-muted;
+
+    &:hover { color: $text; }
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────
+.btn-outline-sm {
+  padding: 7px 14px;
+  border: 1px solid $border;
+  border-radius: 7px;
+  background: transparent;
+  color: $text-muted;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+.btn-save {
+  width: 100%;
+  padding: 12px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+
+  &:hover  { background: darken($primary, 8%); }
+  &:active { transform: scale(0.98); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-cancel {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { border-color: #94a3b8; color: $text; }
+}
+
+// ── Sidebar ───────────────────────────────────────────
+.form-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.summary-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 24px;
+}
+
+.user-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.prev-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $primary, #818cf8);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.prev-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text;
+}
+
+.prev-username {
+  font-size: 0.8rem;
+  color: $text-muted;
+  font-family: 'Consolas', monospace;
+}
+
+.prev-role { margin: 4px 0; }
+
+.prev-rows {
+  width: 100%;
+  margin-top: 12px;
+  border-top: 1px solid $border;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prev-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+
+  span:first-child { color: $text-muted; }
+  strong { color: $text; font-weight: 500; font-size: 0.82rem; }
+}
+
+.form-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Badges (shared) ───────────────────────────────────
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.role-super  { background: #fef3c7; color: #92400e; }
+  &.role-admin  { background: #ede9fe; color: #5b21b6; }
+  &.role-user   { background: #dbeafe; color: #1d4ed8; }
+  &.role-viewer { background: #f0fdf4; color: #166534; }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.active    { background: #dcfce7; color: #166534; }
+  &.suspended { background: #fee2e2; color: #991b1b; }
+}

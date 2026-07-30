@@ -2,64 +2,85 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { LoginRequest, LoginResponse, UserDto } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
-import { User } from '../../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private userSubject = new BehaviorSubject<User | null>(this.getStoredUser());
-  public user$ = this.userSubject.asObservable();
+
+  private apiUrl = `${environment.apiUrl}/auth`;
+
+  private _user = new BehaviorSubject<UserDto | null>(this.getUserFromStorage());
+  user$ = this._user.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // login(email: string, password: string): Observable<User> {
-  //   return this.http.post<User>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
-  //     tap(user => {
-  //       localStorage.setItem('isp_user', JSON.stringify(user));
-  //       this.userSubject.next(user);
-  //     })
-  //   );
-  // }
-  login(email: string, password: string): Observable<User> {
- const hardcodedUser: User = {
-  id: 1,
-  email: "admin@test.com",
-  name: "Admin User",
-  token: "fake-jwt-token",
-  role: "admin",
-  isActive: true
-};
+  // ── LOGIN ──
+  login(request: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request).pipe(
+      tap(res => {
+        localStorage.setItem('token',        res.token);
+        localStorage.setItem('refreshToken', res.refreshToken);
+        localStorage.setItem('expiresAt',    res.expiresAt);
+        localStorage.setItem('user',         JSON.stringify(res.user));
+        this._user.next(res.user);
+      })
+    );
+  }
 
-  return new Observable(observer => {
-    if (email === "admin@test.com" && password === "123456") {
-      
-      localStorage.setItem('isp_user', JSON.stringify(hardcodedUser));
-      this.userSubject.next(hardcodedUser);
-
-      observer.next(hardcodedUser);
-      observer.complete();
-    } else {
-      observer.error("Invalid email or password");
-    }
-  });
-}
-
+  // ── LOGOUT ──
+  // localStorage poori clear karo aur login page pe reroute karo
   logout(): void {
-    localStorage.removeItem('isp_user');
-    this.userSubject.next(null);
+    localStorage.clear();
+    this._user.next(null);
     this.router.navigate(['/login']);
   }
 
-  get currentUser(): User | null { return this.userSubject.value; }
-  get token(): string | null { return this.currentUser?.token || null; }
-  get isLoggedIn(): boolean { return !!this.currentUser; }
-  get userRole(): string { return this.currentUser?.role || ''; }
-  get isAdmin(): boolean { return this.userRole === 'admin'; }
+  // ── TOKEN ──
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
 
-  private getStoredUser(): User | null {
-    try {
-      const d = localStorage.getItem('isp_user');
-      return d ? JSON.parse(d) : null;
-    } catch { return null; }
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    return !this.isTokenExpired();
+  }
+
+  isTokenExpired(): boolean {
+    const expiresAt = localStorage.getItem('expiresAt');
+    if (!expiresAt) return true;
+    return new Date(expiresAt) < new Date();
+  }
+
+  getCurrentUser(): UserDto | null {
+    return this._user.value;
+  }
+
+  hasRole(role: string): boolean {
+    return this._user.value?.role === role;
+  }
+
+  private getUserFromStorage(): UserDto | null {
+    const u = localStorage.getItem('user');
+    return u ? JSON.parse(u) : null;
+  }
+
+  get userRole(): string {
+    return this._user.value?.role || '';
+  }
+
+  // ── Viewer role write-access check ──────────────────────────
+  // false = viewer hai, koi add/edit/delete ka button nahi dikhna chahiye
+  get canEdit(): boolean {
+    return this.userRole.toLowerCase() !== 'viewer';
+  }
+
+  get isViewer(): boolean {
+    return this.userRole.toLowerCase() === 'viewer';
+  }
+
+  get token(): string | null {
+    return this.getToken();
   }
 }

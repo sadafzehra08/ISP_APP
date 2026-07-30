@@ -1,0 +1,501 @@
+// ══════════════════════════════════════════════════════
+// user-list.scss
+// ══════════════════════════════════════════════════════
+
+$primary:    #4f6ef7;
+$danger:     #ef4444;
+$success:    #22c55e;
+$warning:    #f59e0b;
+$text:       #1e293b;
+$text-muted: #64748b;
+$border:     #e2e8f0;
+$bg:         #f8fafc;
+$card:       #ffffff;
+$radius:     12px;
+
+// ── Page wrapper ──────────────────────────────────────
+.users-page {
+  padding: 28px 32px;
+  background: $bg;
+  min-height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+// ── Page Header ───────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .ph-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 4px;
+  }
+  .ph-sub {
+    font-size: 0.875rem;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+.btn-primary {
+  background: $primary;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+
+  &:hover  { background: darken($primary, 8%); }
+  &:active { transform: scale(0.97); }
+}
+
+// ── Filters Bar ───────────────────────────────────────
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 14px 16px;
+}
+
+.fb-search {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+
+  .fb-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  input {
+    width: 100%;
+    padding: 9px 36px 9px 36px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: $text;
+    background: $bg;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { color: #94a3b8; }
+    &:focus { border-color: $primary; }
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $text-muted;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+    line-height: 1;
+
+    &:hover { color: $danger; }
+  }
+}
+
+.fb-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  select {
+    padding: 9px 12px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: $text;
+    background: $bg;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: $primary; }
+  }
+}
+
+.btn-clear {
+  padding: 8px 14px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: $card;
+  color: $text-muted;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { border-color: $danger; color: $danger; }
+}
+
+.fb-results {
+  margin-left: auto;
+  font-size: 0.82rem;
+  color: $text-muted;
+  white-space: nowrap;
+
+  strong { color: $text; }
+}
+
+// ── Loading State ─────────────────────────────────────
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 0;
+  color: $text-muted;
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 12px;
+  }
+  p { margin: 0; font-size: 0.875rem; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Table Card ────────────────────────────────────────
+.table-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  table-layout: fixed;
+
+  thead tr {
+    background: #f1f5f9;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+
+    &.th-actions { text-align: center; }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $border;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #f8fafc; }
+    &.inactive-row { opacity: 0.6; }
+  }
+
+  td {
+    padding: 14px 16px;
+    color: $text;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// ── User Cell ─────────────────────────────────────────
+.td-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $primary, #818cf8);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.inactive { background: #cbd5e1; }
+}
+
+.user-info {
+  min-width: 0;
+
+  .user-name {
+    font-weight: 600;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-joined {
+    font-size: 0.75rem;
+    color: $text-muted;
+    margin-top: 1px;
+  }
+}
+
+// ── Mono ──────────────────────────────────────────────
+.mono {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.text-sm { font-size: 0.8rem; color: $text-muted; }
+
+// ── Badges ────────────────────────────────────────────
+.role-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+
+  &.role-super  { background: #fef3c7; color: #92400e; }
+  &.role-admin  { background: #ede9fe; color: #5b21b6; }
+  &.role-user   { background: #dbeafe; color: #1d4ed8; }
+  &.role-viewer { background: #f0fdf4; color: #166534; }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.active {
+    background: #dcfce7;
+    color: #166534;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $success;
+      display: inline-block;
+    }
+  }
+
+  &.suspended {
+    background: #fee2e2;
+    color: #991b1b;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $danger;
+      display: inline-block;
+    }
+  }
+}
+
+// ── Action Buttons ────────────────────────────────────
+.td-actions {
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+.act-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: $card;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+
+  &:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+  &.view:hover   { border-color: $primary;  background: #eef2ff; }
+  &.edit:hover   { border-color: $warning;  background: #fffbeb; }
+  &.status:hover { border-color: $success;  background: #f0fdf4; }
+  &.del:hover    { border-color: $danger;   background: #fef2f2; }
+}
+
+// ── Empty State ───────────────────────────────────────
+.no-data {
+  text-align: center;
+  padding: 48px 0 !important;
+}
+
+.no-data-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  .no-data-icon { font-size: 2.5rem; opacity: 0.3; }
+  p { margin: 0; color: $text-muted; font-size: 0.9rem; }
+}
+
+.btn-outline {
+  padding: 8px 18px;
+  border: 1px solid $primary;
+  border-radius: 8px;
+  background: transparent;
+  color: $primary;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { background: $primary; color: #fff; }
+}
+
+// ── Pagination ────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pg-btn {
+  padding: 7px 13px;
+  border: 1px solid $border;
+  border-radius: 7px;
+  background: $card;
+  color: $text;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) { border-color: $primary; color: $primary; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &.active { background: $primary; color: #fff; border-color: $primary; font-weight: 600; }
+}
+
+.pg-info {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+// ── Delete Modal ──────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.15s ease;
+}
+
+.modal {
+  background: $card;
+  border-radius: $radius;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.2s ease;
+
+  .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  p {
+    color: $text-muted;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0 0 24px;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+
+  &.cancel {
+    background: #f1f5f9;
+    color: $text-muted;
+    &:hover { background: #e2e8f0; }
+  }
+
+  &.danger {
+    background: $danger;
+    color: #fff;
+    &:hover { background: darken($danger, 8%); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}
+
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp  { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { DashboardService, DashboardStats, RecentInvoice, ActivityLog, MonthlyData } from '../../core/services/dashboard.service';
+import { DashboardService, DashboardStats, RecentInvoice, MonthlyData } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
+import { UserDto } from '../../core/models/auth.model';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,56 +11,82 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: false
 })
 export class DashboardComponent implements OnInit {
+
+  // Default zero state — API se fill hoga
   stats: DashboardStats = {
-    totalClients: 1248, activeClients: 1105, suspendedClients: 137,
-    disconnectedClients: 84, overdueClients: 23, newClientsThisMonth: 38,
-    expiringCount: 142, monthlyRevenue: 480000, collectedToday: 310000,
-    pendingInvoices: 47, overdueAmount: 68500, targetRevenue: 550000
+    totalClients: 0, activeClients: 0, suspendedClients: 0,
+    disconnectedClients: 0, overdueClients: 0, newClientsThisMonth: 0,
+    expiringCount: 0, monthlyRevenue: 0, collectedToday: 0,
+    pendingInvoices: 0, overdueAmount: 0, targetRevenue: 0
   };
 
-  recentInvoices: RecentInvoice[] = [
-    { id: 1, invoiceNo: 'INV-2025-1248', clientName: 'Ahmed Raza', amount: 1500, status: 'paid', dueDate: '2025-05-01' },
-    { id: 2, invoiceNo: 'INV-2025-1247', clientName: 'Sara Khan', amount: 2200, status: 'unpaid', dueDate: '2025-05-05' },
-    { id: 3, invoiceNo: 'INV-2025-1246', clientName: 'Ali Hassan', amount: 1800, status: 'overdue', dueDate: '2025-04-28' },
-    { id: 4, invoiceNo: 'INV-2025-1245', clientName: 'Zara Malik', amount: 3500, status: 'paid', dueDate: '2025-05-02' },
-    { id: 5, invoiceNo: 'INV-2025-1244', clientName: 'Usman Tariq', amount: 1200, status: 'unpaid', dueDate: '2025-05-10' },
-  ];
+  recentInvoices: RecentInvoice[] = [];
 
-//   activityLogs: ActivityLog[] = [
-//     { id: 1, icon: '💵', iconBg: 'rgba(0,229,160,0.1)', title: 'paid invoice', highlight: 'Ahmed Raza', detail: '2 mins ago · Cash', amount: 1500 },
-//     { id: 2, icon: '👤', iconBg: 'rgba(0,180,255,0.1)', title: 'New client added', highlight: 'Fatima Shah', detail: '15 mins ago · 10 Mbps Package' },
-//     { id: 3, icon: '⚠️', iconBg: 'rgba(255,179,64,0.1)', title: 'account suspended', highlight: 'Bilal Chaudhry', detail: '1 hour ago · Non-payment' },
-//     { id: 4, icon: '💵', iconBg: 'rgba(0,229,160,0.1)', title: 'paid via JazzCash', highlight: 'Zara Malik', detail: '2 hours ago · Online', amount: 3500 },
-//   ];
-
-  monthlyData: MonthlyData[] = [
-    { month: 'Jan', revenue: 320000, collection: 285000 },
-    { month: 'Feb', revenue: 360000, collection: 320000 },
-    { month: 'Mar', revenue: 400000, collection: 360000 },
-    { month: 'Apr', revenue: 340000, collection: 300000 },
-    { month: 'May', revenue: 480000, collection: 430000 },
-    { month: 'Jun', revenue: 380000, collection: 340000 },
-    { month: 'Jul', revenue: 430000, collection: 390000 },
-    { month: 'Aug', revenue: 460000, collection: 420000 },
-    { month: 'Sep', revenue: 390000, collection: 350000 },
-    { month: 'Oct', revenue: 500000, collection: 460000 },
-    { month: 'Nov', revenue: 450000, collection: 410000 },
-    { month: 'Dec', revenue: 520000, collection: 475000 },
-  ];
+  // Abhi backend nahi bana — empty rakho, chart sirf fallback dikhayega
+  monthlyData: MonthlyData[] = [];
 
   selectedTab = 'Monthly';
-  maxRevenue = 0;
+  maxRevenue = 1; // 0 se divide na ho isliye 1 default
   currentDate = new Date();
   greeting = '';
+  loading = false;
 
-  constructor(public auth: AuthService, private dashService: DashboardService) {}
+  constructor(public auth: AuthService, private dashService: DashboardService,  private cdr: ChangeDetectorRef   // ← add karo
+) {}
 
-  ngOnInit() {
-    this.maxRevenue = Math.max(...this.monthlyData.map(d => d.revenue));
-    this.setGreeting();
-    // Uncomment when API ready:
-    // this.dashService.getStats().subscribe(s => this.stats = s);
+ngOnInit() {
+  this.setGreeting();
+  this.dashService.getStats().subscribe(s => {
+    this.stats = s;
+    this.cdr.detectChanges();   // ← force update
+  });
+  this.dashService.getRecentInvoices().subscribe(d => {
+    this.recentInvoices = d;
+    this.cdr.detectChanges();
+  });
+    this.loadMonthlyData();   // ← yeh line add karo
+
+}
+loadMonthlyData() {
+  this.dashService.getMonthlyData().subscribe({
+    next: (data) => {
+      this.monthlyData = data;
+      this.maxRevenue = Math.max(...data.map(d => d.revenue), 1);
+      this.cdr.detectChanges();   // ← add karo
+    },
+    error: (e) => console.error('Monthly data load error:', e)
+  });
+}
+  loadStats() {
+    this.loading = true;
+    this.dashService.getStats().subscribe({
+      next: (s) => {
+        this.stats = s;
+        this.loading = false;
+      },
+      error: (e) => {
+        console.error('Dashboard stats load error:', e);
+        this.loading = false;
+      }
+    });
   }
+
+  loadRecentInvoices() {
+    this.dashService.getRecentInvoices().subscribe({
+      next: (data) => this.recentInvoices = data,
+      error: (e) => console.error('Recent invoices load error:', e)
+    });
+  }
+
+  // loadMonthlyData() {
+  //   this.dashService.getMonthlyData().subscribe({
+  //     next: (data) => {
+  //       this.monthlyData = data;
+  //       this.maxRevenue = Math.max(...data.map(d => d.revenue), 1);
+  //     },
+  //     error: (e) => console.error('Monthly data load error:', e)
+  //   });
+  // }
 
   setGreeting() {
     const h = new Date().getHours();
@@ -70,14 +98,17 @@ export class DashboardComponent implements OnInit {
   }
 
   get activePercent(): number {
+    if (!this.stats.totalClients) return 0;
     return Math.round((this.stats.activeClients / this.stats.totalClients) * 100);
   }
 
   get suspendedPercent(): number {
+    if (!this.stats.totalClients) return 0;
     return Math.round((this.stats.suspendedClients / this.stats.totalClients) * 100);
   }
 
   get targetPercent(): number {
+    if (!this.stats.targetRevenue) return 0;
     return Math.round((this.stats.monthlyRevenue / this.stats.targetRevenue) * 100);
   }
 
@@ -85,5 +116,9 @@ export class DashboardComponent implements OnInit {
     if (val >= 100000) return '₨' + (val / 100000).toFixed(1) + 'L';
     if (val >= 1000) return '₨' + (val / 1000).toFixed(0) + 'K';
     return '₨' + val;
+  }
+
+  get currentUser(): UserDto | null {
+    return this.auth.getCurrentUser();
   }
 }
